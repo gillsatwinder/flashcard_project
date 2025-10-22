@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import "../styles/Sidebar.css";
 
 function Sidebar() {
@@ -6,8 +7,12 @@ function Sidebar() {
             <h2>Flashcard App</h2>
             <nav>
                 <ul>
-                    <li>All Courses</li>
-                    <li>My Favorites</li>
+                    <li className="sidebar-item">
+                        <Link to="/dashboard">All Courses</Link>
+                    </li>
+                    <li className="sidebar-item">
+                        <Link>My Favorites</Link>
+                    </li>
                 </ul>
             </nav>
         </div>

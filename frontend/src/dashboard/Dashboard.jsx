@@ -1,34 +1,27 @@
-import React from "react";
-import "./Dashboard.css";
-import { Navigate, useNavigate } from "react-router-dom";
+/*
+Description: Dashboard page component with sidebar and main content area
+Author: Bo Wang
+Date: 10/12/25
+*/
+import { Outlet } from "react-router-dom"; // Import Outlet to render nested routes
+import Sidebar from "../components/Sidebar";
+import "../styles/Dashboard.css";
 
-const Dashboard = () => {
-    const navigate = useNavigate();
-  return (
-    <div className="dashboard">
-      {/* Top Taskbar */}
-      <header className="top-bar">
-        <div className="profile-icon">👤</div>
-        <button className="logout-btn" onClick={()=> navigate("/")}>Logout</button>
-      </header>
 
-      {/* Layout with Sidebar + Main */}
-      <div className="content-layout">
-        {/* Sidebar */}
-        <nav className="sidebar">
-          <button className="menu-item">Home</button>
-          <button className="menu-item">Create</button>
-          <button className="menu-item" onClick={()=> navigate("/pages/deckpage")}>Library</button>
-        </nav>
+function Dashboard() {
 
-        {/* Main Content */}
-        <main className="main-content">
-          <h2>Welcome to Your Dashboard</h2>
-          <p>Select an option from the menu to begin.</p>
-        </main>
-      </div>
-    </div>
-  );
-};
+
+    return (
+        <div className="dashboard">
+            {/* Sidebar component */}
+            <Sidebar />
+
+            {/* Main content area */}
+            <div className="main-content">
+                <Outlet /> {/* Render nested routes */}
+            </div>
+        </div>
+    );
+}
 
 export default Dashboard;

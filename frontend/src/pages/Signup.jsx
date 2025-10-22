@@ -1,6 +1,6 @@
 import React from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
-import './Signup.css';
+import '../styles/Signup.css';//change the path as needed
 
 const Signup = () => {
     const navigate = useNavigate();
