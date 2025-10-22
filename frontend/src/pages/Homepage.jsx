@@ -1,16 +1,19 @@
+/*  
+Latest update: 10/21/25
+*/
 import React from "react";
-import { Navigate, useNavigate } from "react-router-dom";
-import "./Homepage.css";
+import {useNavigate } from "react-router-dom"; //delete unused imports
+import "../styles/Homepage.css"; //change the path as needed
 
 const Homepage = () => {
-  const Navigate = useNavigate();
+  const navigate = useNavigate();
   
   return (
     <div className="homepage">
       {/* Top bar */}
       <header className="top-bar">
         <div className="brand-name">BrainFlip</div>
-        <button className="login-btn" onClick={()=> Navigate("/signin")}>Login</button>
+        <button className="login-btn" onClick={()=> navigate("/signin")}>Login</button>
       </header>
 
       {/* Center content */}

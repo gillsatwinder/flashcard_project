@@ -1,96 +1,142 @@
 /*
 Author: Bo Wang
-Date: 10/12/25
+Last Updated: 10/21/25
 Description: CoursePage component to display decks within a course and allow adding and managing decks.
 */
-import { useParams } from "react-router-dom";
-import { Link } from "react-router-dom";
+
+import { useParams, Link } from "react-router-dom";
 import { useState } from "react";
-import "../styles/Navigation.css";
+import useItemManager from "../hooks/useItemManager";
+import AddItemForm from "../components/AddItemForm";
+
+
+
+// Component for editable deck
+function EditableDeck({ deck, courseId, onDelete, onSave }) {
+
+    // state for editing mode and form values
+    const [isEditing, setIsEditing] = useState(false);
+    const [editValues, setEditValues] = useState({
+        name: deck.name,
+        description: deck.description,
+    });
+
+    // handle input changes
+    const handleChange = (field, value) => {
+        setEditValues({ ...editValues, [field]: value });
+    };
+
+    // handle save action
+    const handleSave = () => {
+        onSave(editValues);
+        setIsEditing(false);
+    };
+
+    return (
+        <div className="deck-card">
+            {/* if in editing mode, show input fields; otherwise, show deck details */}
+            {isEditing ? (
+                <>
+                    <input
+                        type="text"
+                        value={editValues.name}
+                        onChange={(e) => handleChange("name", e.target.value)} // handle input changes
+                        placeholder="Deck name"
+                    />
+                    <br />
+                    <input
+                        type="text"
+                        value={editValues.description}
+                        onChange={(e) => handleChange("description", e.target.value)}
+                        placeholder="Description"
+                    />
+
+                    <br />
+                    <button onClick={handleSave}>Done</button>
+                    <button onClick={() => setIsEditing(false)}>Cancel</button>
+                </>
+            ) : (
+                <>
+                    {/* display deck details */}
+                    <Link to={`/dashboard/course/${courseId}/deck/${deck.id}`}>
+                        <h3>{deck.name}</h3>
+                    </Link>
+                    <p>{deck.description}</p>
+                    <p>Cards: {deck.cardCount}</p>
+                    <button onClick={() => setIsEditing(true)}>Edit</button>
+                    <button onClick={onDelete}>Delete</button>
+                </>
+            )}
+        </div>
+    );
+}
+
 
 function CoursePage() {
     // Get courseId from URL parameters
     const { courseId } = useParams();
-    // Sample data for decks in the course
-    const [decks, setDecks] = useState([
-        { id: 1, name: "Algebra", description: "Basic algebra concepts.", cardCount: 10 },
-        { id: 2, name: "Geometry", description: "Shapes and theorems.", cardCount: 8 },
-        { id: 3, name: "Calculus", description: "Limits and derivatives.", cardCount: 12 },
-    ]);
+
+    // Manage decks using useItemManager hook
+    const { items: decks, addItem: addDeck, deleteItem: deleteDeck, updateItem: editDeck } =
+        useItemManager([
+            { id: 1, name: "HTML", description: "Learn HTML basics", cardCount: 12 },
+            { id: 2, name: "CSS", description: "Learn how to style web pages", cardCount: 8 },
+        ]);
+
+    // state for showing add deck form and form values
     const [showForm, setShowForm] = useState(false);
-    const [newDeckName, setNewDeckName] = useState("");
-    const [newDescription, setNewDescription] = useState("");
+    const [formValues, setFormValues] = useState({ name: "", description: "" });
 
-
-    function addDeck() {
-
-        // Create new deck object
-        const newDeck = {
-            id: decks.length + 1, // Backend will generate unique ID, so this is just for frontend purposes
-            name: newDeckName,
-            description: newDescription,
-            cardCount: 0,
-        };
-
-        // Deck name validation
-        if (newDeckName.trim() === "") {
-            alert("Please enter a deck name.");
-            return;
-        } else if (decks.some(deck => deck.name.toLowerCase() === newDeckName.toLowerCase())) {
-            alert("Deck with this name already exists.");
-            return;
-        }
-
-        // Add new deck to the list
-        setDecks([...decks, newDeck]);
-
-        setNewDeckName(""); // Clear input field
-        setNewDescription(""); // Clear description field
-
-        // Hide form
-        setShowForm(false);
-    }
-
-    // Function to delete a deck
-    const deleteDeck = (deckId) => {
-        const updatedDecks = decks.filter(deck => deck.id !== deckId);
-        setDecks(updatedDecks);
+    // handle form input changes
+    const handleChange = (field, value) => {
+        setFormValues({ ...formValues, [field]: value });
     };
 
+    // handle adding a new deck
+    const handleAdd = () => {
+        addDeck({ name: formValues.name, description: formValues.description, cardCount: 0 });
+        setFormValues({ name: "", description: "" });
+        setShowForm(false);
+    };
+
+    // render the course page
     return (
         <div className="course-page">
-            <Link to="/dashboard" className="back-button">Back to All Courses</Link>
-            <button onClick={() => setShowForm(true)} className="add-deck-button">+ Add New Deck</button>
-            {showForm && (
-                <div className="deck-form">
-                    <input
-                        type="text"
-                        placeholder="Deck Name"
-                        value={newDeckName}
-                        onChange={(e) => setNewDeckName(e.target.value)}
-                    />
-                    <textarea placeholder="Deck Description"
-                        value={newDescription}
-                        onChange={(e) => setNewDescription(e.target.value)}></textarea>
-                    <button onClick={addDeck}>Add Deck</button>
-                    <button onClick={() => setShowForm(false)}>Cancel</button>
-                </div>
-            )}
+            <Link to="/dashboard" className="back-button">
+                ← Back to All Courses
+            </Link>
+
             <h1>Course ID: {courseId}</h1>
-            <h2>Decks in this course:</h2>
-            {decks.map((deck) => (
-                <div key={deck.id} className="deck-card">
-                    <Link to={`/dashboard/course/${courseId}/deck/${deck.id}`}>
-                        <h3>{deck.name}</h3>
-                        <p>{deck.description}</p>
-                        <p>Cards: {deck.cardCount}</p>
-                    </Link>
-                    <button onClick={(e) => {
-                        e.stopPropagation(); // Prevent triggering the Link navigation
-                        deleteDeck(deck.id);
-                    }} className="delete-button">Delete</button>
-                </div>
-            ))}
+            <button onClick={() => setShowForm(true)}>+ Add Deck</button>
+            <br />
+            <br />
+            {/* Show add deck form if showForm is true */}
+            {showForm && (
+                <AddItemForm
+                    fields={[
+                        { name: "name", placeholder: "Deck Name" },
+                        { name: "description", placeholder: "Deck Description" },
+                    ]}
+                    values={formValues}
+                    onChange={handleChange}
+                    onSubmit={handleAdd}
+                    onCancel={() => setShowForm(false)}
+                    mode="add"
+                />
+            )}
+
+            {/* Display the list of decks */}
+            <div className="decks-grid">
+                {decks.map((deck) => (
+                    <EditableDeck
+                        key={deck.id}
+                        deck={deck}
+                        courseId={courseId}
+                        onDelete={() => deleteDeck(deck.id)}
+                        onSave={(updated) => editDeck(deck.id, updated)}
+                    />
+                ))}
+            </div>
         </div>
     );
 }
