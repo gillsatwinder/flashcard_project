@@ -1,9 +1,9 @@
 import React from "react";
 import { Routes, Route } from "react-router-dom";
-import Homepage from "./Homepage.jsx";
-import Signin from "./Signin.jsx";
-import Signup from "./Signup.jsx";
-import Dashboard from "./Dashboard.jsx";
+import Homepage from "./homepage/Homepage.jsx";
+import Signin from "./pages/signin/Signin.jsx";
+import Signup from "./pages/signup/Signup.jsx";
+import Dashboard from "./dashboard/Dashboard.jsx";
 
 
 function App() {
