@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 
-const cardSchema = new mongoose.schema({
-    cardID: {type: Number, required: true, unique:true},
+const cardSchema = new mongoose.Schema({
+    cardID: {type: Number, required: true, unique: true},
     deckID: {type: Number, required: true},
     qSide: {type: String, required: true},
     aSide: {type: String, required: true}

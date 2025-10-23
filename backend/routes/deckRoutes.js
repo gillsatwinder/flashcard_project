@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const deckFuncts = require('../../database/DBFunctions/deckFunctions');
+const deckFuncts = require('../controllers/deckFunctions');
 
 // POST /users — create new user
 router.post('/', deckFuncts.createDeck);

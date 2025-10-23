@@ -1,0 +1,41 @@
+services:
+  mongodb:
+    image: mongo:7.0
+    container_name: flashcard_mongodb
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_DATABASE: flashcard_db
+    volumes:
+      - mongodb_data:/data/db
+    networks:
+      - flashcard_network
+
+  backend:
+    build: 
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: flashcard_backend
+    restart: unless-stopped
+    ports:
+      - "5000:5000"
+    environment:
+      - PORT=5000
+      - MONGODB_URI=mongodb://mongodb:27017/flashcard_db
+      - NODE_ENV=development
+    depends_on:
+      - mongodb
+    networks:
+      - flashcard_network
+    volumes:
+      - ./backend:/app                  # ✅ Maps local backend to container's /app
+      - /app/node_modules               # ✅ Preserves installed node_modules
+    command: npm run dev                # ✅ Use nodemon for hot-reload
+
+volumes:
+  mongodb_data:
+
+networks:
+  flashcard_network:
+    driver: bridge

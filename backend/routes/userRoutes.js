@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const userFuncts = require('../database/DBFunctions/userFunctions');
+const userFuncts = require('../controllers/userFunctions');
 
 //Post /user is for creating a new account.
 router.post('/', userFuncts.createUser);

@@ -1,4 +1,4 @@
-const User = require('../schemas/user');
+const User = require('../models/User');
 
 //Function for creating a User - MUST VERIFY AJAX CALL USES CORRECT JSON FORMAT AND NAMING.
 exports.createUser = async (req, res) => {
