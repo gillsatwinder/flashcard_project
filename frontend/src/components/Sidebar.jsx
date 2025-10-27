@@ -1,21 +1,29 @@
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import "../styles/Sidebar.css";
 
 function Sidebar() {
+    const location = useLocation();
+
     return (
-        <div className="sidebar">
-            <h2>Flashcard App</h2>
+        <aside className="sidebar">
+            <h2 className="sidebar-title">📚 Flashcard App</h2>
             <nav>
-                <ul>
-                    <li className="sidebar-item">
-                        <Link to="/dashboard">All Courses</Link>
+                <ul className="sidebar-list">
+                    <li
+                        className={`sidebar-item ${location.pathname === "/dashboard" ? "active" : ""
+                            }`}
+                    >
+                        <Link to="/dashboard">All Decks</Link>
                     </li>
-                    <li className="sidebar-item">
-                        <Link>My Favorites</Link>
+                    <li
+                        className={`sidebar-item ${location.pathname === "/dashboard/favorites" ? "active" : ""
+                            }`}
+                    >
+                        <Link to="/dashboard/favorites">My Favorites</Link>
                     </li>
                 </ul>
             </nav>
-        </div>
+        </aside>
     );
 }
 

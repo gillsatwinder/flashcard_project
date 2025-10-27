@@ -1,29 +1,28 @@
-import { Outlet, useNavigate } from "react-router-dom"; // Import Outlet to render nested routes
+import { Outlet, useNavigate } from "react-router-dom";
 import Sidebar from "../components/Sidebar";
 import "../styles/Dashboard.css";
 
-
 function Dashboard() {
-    
     const navigate = useNavigate();
 
     return (
-        <div className="dashboard">
-
-            {/* Top Taskbar */}
+        <div className="dashboard-layout">
+            {/* Top bar */}
             <header className="top-bar">
-                <div className="profile-icon">👤</div>
-                <button className="logout-btn" onClick={() => navigate("/")}>Logout</button>
+                <div className="logo-text">Flashcard Dashboard</div>
+                <div className="user-controls">
+                    <div className="profile-icon">👤</div>
+                    <button className="logout-btn" onClick={() => navigate("/")}>
+                        Logout
+                    </button>
+                </div>
             </header>
 
-            {/* Main content area */}
-            <div className="content-area">
-                {/* Sidebar component */}
+            {/* Main content */}
+            <div className="content-wrapper">
                 <Sidebar />
-                
-                {/* Course, Deck, Cards etc. */}
-                <main className="main-area">
-                    <Outlet /> {/* Render nested routes */}
+                <main className="main-content">
+                    <Outlet />
                 </main>
             </div>
         </div>
