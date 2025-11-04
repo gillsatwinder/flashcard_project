@@ -11,17 +11,17 @@ function useItemManager(initialItems = []) {
             alert("Please fill in all fields.");
             return;
         }
-        setItems([...items, { id: items.length + 1, ...newItem }]);
+        setItems(prevItems => [...prevItems, { id: Date.now() + Math.random(), ...newItem }]);
     };
 
     // Function to delete an item by ID
     const deleteItem = (itemId) => {
-        setItems(items.filter(item => item.id !== itemId));
+        setItems(prevItems => prevItems.filter(item => item.id !== itemId));
     }
 
     // Function to update an item by ID
     const updateItem = (id, updatedFields) => {
-        setItems(items.map((item) =>
+        setItems(prevItems => prevItems.map((item) =>
             item.id === id ? { ...item, ...updatedFields } : item
         ));
     };
