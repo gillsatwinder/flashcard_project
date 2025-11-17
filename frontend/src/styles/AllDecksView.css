@@ -1,0 +1,149 @@
+/* All Decks View Styles */
+.all-decks-container {
+  padding: 24px;
+  background-color: #f8f9fa;
+  min-height: 100vh;
+}
+
+/* Header + Button Area */
+.header-section {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 24px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+/* another design for .header-section
+.header-section {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start; 
+  gap: 12px;                  
+  margin-bottom: 24px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #e0e0e0;
+} */
+
+.page-title {
+  font-size: 28px;
+  font-weight: 600;
+  color: #333;
+  margin: 0;
+}
+.add-deck-btn {
+  background-color: #2196f3;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 20px;
+  font-size: 15px;
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+}
+
+.add-deck-btn:hover {
+  background-color: #1976d2;
+  transform: translateY(-1px);
+}
+
+/* Form section */
+.deck-form-section {
+  margin-bottom: 24px;
+}
+
+/* Grid layout */
+.deck-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 20px;
+}
+
+/* Single card */
+.deck-card {
+  background-color: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.deck-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Card internal */
+.deck-card-header h3 {
+  font-size: 18px;
+  color: #333;
+  margin-bottom: 8px;
+}
+
+.deck-card-body p {
+  color: #555;
+  font-size: 14px;
+  margin: 4px 0;
+}
+
+.deck-count {
+  font-weight: 500;
+  color: #666;
+}
+
+/* Footer button area */
+.deck-card-footer {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 16px;
+}
+
+.view-btn,
+.delete-btn {
+  border: none;
+  border-radius: 6px;
+  padding: 8px 14px;
+  font-size: 14px;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background-color 0.2s ease;
+}
+
+.view-btn {
+  background-color: #2196f3;
+  color: white;
+}
+
+.view-btn:hover {
+  background-color: #1976d2;
+}
+
+.delete-btn {
+  background-color: #f44336;
+  color: white;
+}
+
+.delete-btn:hover {
+  background-color: #d32f2f;
+}
+
+/* empty list */
+.empty-text {
+  text-align: center;
+  color: #777;
+  font-style: italic;
+  margin-top: 40px;
+}
+
+
+@media (max-width: 600px) {
+  .header-inline {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+}

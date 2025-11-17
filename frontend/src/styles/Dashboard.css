@@ -1,0 +1,79 @@
+/* Dashboard layout */
+.dashboard-layout {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  font-family: "Inter", Arial, sans-serif;
+  color: #333;
+  background-color: #f6f7fb;
+}
+
+/* Top bar */
+.top-bar {
+  background-color: #ffffff;
+  border-bottom: 1px solid #e0e0e0;
+  padding: 12px 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  z-index: 10;
+}
+
+.logo-text {
+  font-weight: 600;
+  font-size: 18px;
+  color: #2f4858;
+}
+
+.user-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.profile-icon {
+  font-size: 22px;
+}
+
+.logout-btn {
+  background-color: #f44336;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 14px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  font-size: 14px;
+}
+
+.logout-btn:hover {
+  background-color: #d32f2f;
+}
+
+/* Content wrapper */
+.content-wrapper {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+/* Main content */
+.main-content {
+  flex: 1;
+  padding: 24px;
+  overflow-y: auto;
+  background-color: #f8f9fa;
+  box-sizing: border-box;
+}
+
+/* Responsive */
+@media (max-width: 800px) {
+  .content-wrapper {
+    flex-direction: column;
+  }
+
+  .main-content {
+    padding: 16px;
+  }
+}
