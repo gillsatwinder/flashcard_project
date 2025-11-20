@@ -276,8 +276,10 @@ function DeckPage() {
     const handlePDFSubmit = async (pdfFile, numFlashcards) => {
         const formData = new FormData();
 
-        formData.append('pdf', pdfFile); formData.append('numFlashcards', numFlashcards);
-        formData.append('deckID', deckId); formData.append('userEmail', currentUser?.email);
+        formData.append('pdf', pdfFile);
+        formData.append('numFlashcards', numFlashcards);
+        formData.append('deckID', deckId);
+        formData.append('userEmail', currentUser?.email);
 
 
         try {
@@ -289,32 +291,57 @@ function DeckPage() {
             const data = await response.json();
 
             if (response.ok) {
+                const loadCards = async () => {
+                    try {
+                        const cardsResponse = await fetch(`http://localhost:5000/api/cards/${deckId}?userEmail=${encodeURIComponent(currentUser.email)}`, {
+                            method: 'GET',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            }
+                        });
 
-                data.flashcards.forEach((card, index) => {
-                    console.log(`Adding card ${index + 1}:`, card);
-                    const newCard = {
-                        front: card.question,
-                        back: card.answer
-                    };
-                    console.log('Formatted card:', newCard);
-                    addCard(newCard);
-                });
 
+                        if (cardsResponse.ok) {
+                            const cardsData = await cardsResponse.json();
+                            const mappedCards = cardsData.map(card => ({
+                                id: card.cardID,
+                                front: card.qSide,
+                                back: card.aSide
+                            }));
+
+                            console.log("✅ Setting cards:", mappedCards);
+                            setCards(mappedCards);
+                        }
+                        else if (cardsResponse.status === 404 || cardsResponse.status === 400) {
+                            setCards([]);
+                        }
+                        else {
+                            const errorData = await cardsResponse.json();
+                            alert(`Error: ${errorData.error}`);
+                        }
+
+
+                    }
+                    catch (error) {
+                        console.error('Error reloading cards: ', error);
+                    }
+                }
+
+
+                await loadCards();
                 alert(`Successfully generated ${data.flashcards.length} flashcards!`);
-
             }
-
-            else {
-                alert(`Error: ${data.error}`);
+            else { 
+                alert(`Error: ${data.error}`); 
             }
-
-
-        } catch (error) {
+        }
+        catch (error) {
             console.error('Error generating flashcards:', error);
             alert('Failed to generate flashcards. Please try again.');
         }
-    };
 
+
+    }
 
 
     return (
@@ -332,7 +359,7 @@ function DeckPage() {
                     marginLeft: '10px'
                 }}
             >
-                + Generate Cards From PDF
+                + Generate Cards From PDF (AI Powered)
             </button>
 
 

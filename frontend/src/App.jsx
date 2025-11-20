@@ -18,24 +18,12 @@ function App() {
 
 
     if (savedUser) {  setCurrentUser(JSON.parse(savedUser)); }
-
-
   }, []);
 
-
+  
+  const loginUser = (userData) => {   setCurrentUser(userData);   localStorage.setItem('currentUser', JSON.stringify(userData));  };
 
   
-  const loginUser = (userData) => {   setCurrentUser(userData);    localStorage.setItem('currentUser', JSON.stringify(userData));  };
-
-  
-  // const logoutUser = () => {
-  //   setCurrentUser(null);
-  //   localStorage.removeItem('currentUser');
-  // };
-
-
-
-
   return (
     <Routes>
       <Route path="/" element={<Homepage />} />

@@ -3,6 +3,7 @@ const OpenAI = require("openai");
 const pdfParse = require('pdf-parse');
 const cardFunctions = require('./cardFunctions');
 const Card = require('../models/Card');
+require('dotenv').config({ path: '../../.env' });
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
@@ -22,7 +23,7 @@ exports.generateFlashcards = async (req, res) => {
         const pdfText = pdfData.text;
 
         const response = await openai.chat.completions.create({
-            model: "gpt-4o-mini",
+            model: process.env.GPT_MODEL,
             messages: [
                 {
                     role: "system",
