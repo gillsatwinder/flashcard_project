@@ -117,17 +117,11 @@ exports.getAllCards = async (req, res) => {
   try {
     //Get the deckID from the request parameters then search for cards with the deckID.
     const { deckID } = req.params;
-    const { userEmail } = req.body;
+    const { userEmail } = req.query;
 
     if (!userEmail) { return res.status(400).json({ message: 'userEmail is required' }); }
 
     const cards = await Card.find({ deckID: deckID,  userEmail: userEmail  });
-
-
-    //If no cards returned, return 404. (May choose to handle this differently)
-    if (cards.length === 0) {
-      return res.status(404).json({ message: 'No cards found for this deck.' });
-    }
 
     //Return the cards if successful.
     res.status(200).json(cards);

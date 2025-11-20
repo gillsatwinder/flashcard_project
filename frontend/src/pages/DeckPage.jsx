@@ -151,14 +151,12 @@ function PDFModal({ isOpen, onClose, onSubmit }) {
 function DeckPage() {
     const { currentUser } = useOutletContext();
     const { deckId } = useParams();
-    const { items: cards, addItem: addCard, deleteItem: deleteCard, updateItem: editCard } = useItemManager([
-        { id: 1, front: "What is React?", back: "A JavaScript library for building UIs." },
-    ]);
+    const [cards, setCards] = useState([]);
+    const { addItem: addCard, deleteItem: deleteCard, updateItem: editCard } = useItemManager([]);
 
     const [showForm, setShowForm] = useState(false);
     const [formValues, setFormValues] = useState({ front: "", back: "" });
     const [showPDFModal, setShowPDFModal] = useState(false);
-
 
 
 
@@ -167,21 +165,28 @@ function DeckPage() {
             if (!currentUser?.email) return;
 
             try {
-                const response = await fetch(`http://localhost:5000/api/cards/deck/${deckId}?userEmail=${encodeURIComponent(currentUser.email)}`, {
+                const response = await fetch(`http://localhost:5000/api/cards/${deckId}?userEmail=${encodeURIComponent(currentUser.email)}`, {
                     method: 'GET',
                     headers: { 'Content-Type': 'application/json' }
                 });
+                console.log("📡 Response status:", response.status);
+
 
                 if (response.ok) {
                     const data = await response.json();
                     const mappedCards = data.map(card => ({
-                        id: card.cardID, 
+                        id: card.cardID,
                         front: card.qSide,
                         back: card.aSide
                     }));
-                    setItems(mappedCards); // You'll need to get setItems from useItemManager or use useState
-                }
+
+                    console.log("✅ Setting cards:", mappedCards);
+                    setCards(mappedCards);
+                } else if (response.status === 404 || response.status === 400) { setCards([]); }
+
+
             } catch (error) {
+                console.log("❌ Backend error message:", data.message);
                 console.error('Error loading cards:', error);
             }
         };
@@ -222,11 +227,21 @@ function DeckPage() {
 
 
             if (response.ok) {
-                addCard({ front: formValues.front, back: formValues.back });
-                setFormValues({ front: "", back: "" }); setShowForm(false);
-                console.log("Card saved succesfully!: ", data)
-            }
-            else { alert(data.message || 'Error creating card'); }
+                const newCard = {
+                    id: data.card.cardID,
+                    front: formValues.front,
+                    back: formValues.back
+                };
+                console.log("🆕 Adding new card to state:", newCard);
+                setCards(prevCards => {
+                    console.log("📦 Previous cards:", prevCards);
+                    const updated = [...prevCards, newCard];
+                    console.log("📦 Updated cards:", updated);
+                    return updated;
+                });
+                setFormValues({ front: "", back: "" });
+                setShowForm(false);
+            } else { alert(data.message || 'Error creating card'); }
 
 
         } catch (error) {
@@ -246,7 +261,17 @@ function DeckPage() {
 
             const data = await response.json();
 
-            if (response.ok) { editCard(cardId, updatedValues); console.log("Card edited successfully!: ", data) }
+            if (response.ok) {
+                setCards(prevCards =>
+                    prevCards.map(card =>
+                        card.id === cardId
+                            ? { ...card, front: updatedValues.front, back: updatedValues.back }
+                            : card
+                    )
+                );
+
+                console.log("Card edited successfully!: ", data)
+            }
             else { alert(data.message || 'Error with updating the card.') }
         }
         catch (error) {
