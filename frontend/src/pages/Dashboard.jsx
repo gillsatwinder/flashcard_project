@@ -2,7 +2,7 @@ import { Outlet, useNavigate } from "react-router-dom";
 import Sidebar from "../components/Sidebar";
 import "../styles/Dashboard.css";
 
-function Dashboard() {
+function Dashboard({ currentUser }) {
     const navigate = useNavigate();
 
     return (
@@ -22,7 +22,7 @@ function Dashboard() {
             <div className="content-wrapper">
                 <Sidebar />
                 <main className="main-content">
-                    <Outlet />
+                    <Outlet context={{currentUser}}/>
                 </main>
             </div>
         </div>

@@ -4,6 +4,9 @@ Description: AllDecksView component to display and manage all decks.
 */
 import { Link, useLocation } from "react-router-dom";
 import { useState } from "react";
+import { Link } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useOutletContext } from "react-router-dom";
 import useItemManager from "../hooks/useItemManager";
 import AddItemForm from "../components/AddItemForm";
 import "../styles/AllDecksView.css";
@@ -18,23 +21,68 @@ function AllDecksView() {
         useItemManager([
             { id: 1, name: "CS372", description: "Intro to Web Development", cardCount: 5, isFavorite: false },
         ]);
+    const { currentUser } = useOutletContext(); // Get the currentUser from the Outlet in App.jsx.
+    const [decks, setDecks] = useState([]);
+    const { addItem: addDeck, deleteItem: deleteDeck } = useItemManager([]);
+
 
     // state for showing add deck form and form values
     const [showForm, setShowForm] = useState(false); // State to control form visibility
     const [formValues, setFormValues] = useState({ name: "", description: "" });
+
+
+
+    // Load decks from database
+    useEffect(() => {
+        const loadDecks = async () => {
+            if (!currentUser?.email) return;
+
+            try {
+                // Note: You'll need to update the backend route to use userEmail
+                const encodedEmail = encodeURIComponent(currentUser.email);
+                const response = await fetch(`http://localhost:5000/api/decks/user/${encodedEmail}`, {
+                    method: 'GET',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    const mappedDecks = data.map(deck => ({
+                        id: deck.deckID,
+                        name: deck.title,
+                        description: deck.description || "",
+                        cardCount: deck.cardCount || 0
+                    }));
+                    setDecks(mappedDecks);
+                }
+            } catch (error) {
+                console.error('Error loading decks:', error);
+            }
+        };
+
+        loadDecks();
+    }, [currentUser?.email, setDecks]);
+
+
 
     // handle form input changes
     const handleChange = (field, value) => {
         setFormValues({ ...formValues, [field]: value });
     };
 
-    // handle adding a new deck
-    const handleSubmit = () => {
+    // Updated handleSubmit to save to database
+    const handleSubmit = async () => {
         const trimmedName = formValues.name.trim();
         if (trimmedName === "") {
             alert("Deck name cannot be empty.");
             return;
         }
+
+        if (!currentUser?.email) {
+            alert("Please log in to create decks");
+            return;
+        }
+
         const isDuplicate = decks.some((deck) => deck.name.toLowerCase() === trimmedName.toLowerCase());
         if (isDuplicate) {
             alert("A deck with this name already exists.");
@@ -51,6 +99,32 @@ function AllDecksView() {
         // reset form values and hide form
         setFormValues({ name: "", description: "" });
         setShowForm(false);
+
+        try {
+            const response = await fetch('http://localhost:5000/api/decks', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ title: trimmedName, description: formValues.description, userEmail: currentUser.email })
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                setDecks(prevDecks => [...prevDecks, {
+                    id: data.deck.deckID,
+                    name: trimmedName,
+                    description: formValues.description,
+                    cardCount: 0
+                }]); setFormValues({ name: "", description: "" });
+                setShowForm(false);
+                console.log("Deck created successfully!", data);
+            } else {
+                alert(data.error || 'Error creating deck');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('Failed to create deck');
+        }
     };
 
     // handle toggling favorite status
@@ -97,7 +171,7 @@ function AllDecksView() {
 
     // render the all decks view
     return (
-         <div className="all-decks-container">
+        <div className="all-decks-container">
             <div className="header-section">
                 <h1 className="page-title">{isFavoritesPage ? "My Favorites" : "My Decks"}</h1>
                 <button className="add-deck-btn" onClick={() => setShowForm(true)}>

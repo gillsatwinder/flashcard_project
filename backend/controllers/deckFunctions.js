@@ -7,29 +7,29 @@ exports.createDeck = async (req, res) => {
   try {
 
     //userID is assumed to be handed to the function with legitimate value.
-    let inDeckID = Math.ceil(Math.random() * 10000);
-    let inUserID = req.body.userID;
-    let inTitle = req.body.title;
+    let deckID = Math.ceil(Math.random() * 10000);
+    let userEmail = req.body.userEmail;  
+    let title = req.body.title;
 
-    const userIDTest = await User.findOne({userID: inUserID});
-    if(!userIDTest) return res.status(400).json({ error: "No user exists with the provided userID"});
+    const userIDTest = await User.findOne({ email: userEmail });
+    if (!userIDTest) return res.status(400).json({ error: "No user exists with the provided userID" });
 
     //May implement a length limit to the title - Might want to do that on the front end though.
     //Ensure that the title is not empty.
-    if(!inTitle) return res.status(400).json({ error: "Decks cannot have an empty title"});
+    if (!title) return res.status(400).json({ error: "Decks cannot have an empty title" });
 
     //Ensure that the deckID generated is unique.
-    let deckIDTest = await Deck.findOne({deckID: inDeckID});
-    while(deckIDTest){
-      inDeckID++;
-      deckIDTest = await Deck.findOne({deckID: inDeckID});
+    let deckIDTest = await Deck.findOne({ deckID: deckID });
+    while (deckIDTest) {
+      deckID++;
+      deckIDTest = await Deck.findOne({ deckID: deckID });
     }
 
     //Prep new deck data.
     const deckData = {
-      deckID: inDeckID,
-      userID: inUserID,
-      title: inTitle
+      deckID: deckID,
+      userEmail: userEmail,
+      title: title
     };
 
     //Create new deck and save it to the DB.
@@ -41,6 +41,8 @@ exports.createDeck = async (req, res) => {
   }
 };
 
+
+
 //Updates an existing deck - Should only need to update title.
 exports.updateDeck = async (req, res) => {
   try {
@@ -48,9 +50,9 @@ exports.updateDeck = async (req, res) => {
     const { deckID } = req.params;
 
     let inTitle = req.body.title;
-    if(!inTitle) return res.status(400).json({ error: "Decks cannot have an empty title"});
+    if (!inTitle) return res.status(400).json({ error: "Decks cannot have an empty title" });
 
-    const updatedDeck = await Deck.findOneAndUpdate({deckID: deckID }, req.body, { new: true });
+    const updatedDeck = await Deck.findOneAndUpdate({ deckID: deckID }, req.body, { new: true });
 
     //Return 404 if no deck matches that deckID.
     if (!updatedDeck) {
@@ -63,6 +65,9 @@ exports.updateDeck = async (req, res) => {
     res.status(400).json({ error: err.message });
   }
 };
+
+
+
 
 //Retrieves a deck by deckID
 exports.getDeck = async (req, res) => {
@@ -88,9 +93,9 @@ exports.getDeck = async (req, res) => {
 exports.getAllDecks = async (req, res) => {
   try {
 
-    //Get the userID from the request parameters and search for decks with this userID.
-    const { userID } = req.params;
-    const decks = await Deck.find({ userID: userID });
+    //Get the userEmail from the request parameters and search for decks with this userID.
+    const { userEmail } = req.params;
+    const decks = await Deck.find({ userEmail: userEmail });
 
     if (decks.length === 0) {
       return res.status(404).json({ message: 'No decks found for this user.' });
@@ -102,6 +107,9 @@ exports.getAllDecks = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
+
+
+
 
 //Deletes a specific deck identified by deckID.
 exports.deleteDeck = async (req, res) => {

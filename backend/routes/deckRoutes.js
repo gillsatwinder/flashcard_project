@@ -9,7 +9,7 @@ router.post('/', deckFuncts.createDeck);
 router.get('/:deckID', deckFuncts.getDeck);
 
 //GET route to retrieve all decks belonging for a user.
-router.get('/user/:userID', deckFuncts.getAllDecks);
+router.get('/user/:userEmail', deckFuncts.getAllDecks);
 
 //PUT route to update a deck by deckID
 router.put('/:deckID', deckFuncts.updateDeck);

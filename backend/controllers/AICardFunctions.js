@@ -1,16 +1,16 @@
 const fs = require("fs/promises");
 const OpenAI = require("openai");
 const pdfParse = require('pdf-parse');
+const cardFunctions = require('./cardFunctions');
+const Card = require('../models/Card');
+require('dotenv').config({ path: '../../.env' });
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 
-/**
- * Accepts a PDF and number of flashcards, returns flashcard JSON.
- */
 exports.generateFlashcards = async (req, res) => {
     try {
-        const { numFlashcards } = req.body;
+        const { numFlashcards, deckID, userEmail } = req.body;
         const pdfPath = req.file?.path;
 
 
@@ -23,7 +23,7 @@ exports.generateFlashcards = async (req, res) => {
         const pdfText = pdfData.text;
 
         const response = await openai.chat.completions.create({
-            model: "gpt-4o-mini", // Use "gpt-4o" for higher quality
+            model: process.env.GPT_MODEL,
             messages: [
                 {
                     role: "system",
@@ -70,6 +70,27 @@ exports.generateFlashcards = async (req, res) => {
                 raw: textOutput
             });
         }
+
+
+        const savedCards = [];
+        for (let i = 0; i < flashcards.length; i++) {
+            const flashcard = flashcards[i];
+
+            const cardData = { 
+                cardID: Date.now() + i, 
+                deckID: deckID, 
+                userEmail: userEmail, 
+                qSide: flashcard.question, 
+                aSide: flashcard.answer
+            };
+
+            try { const card = new Card(cardData);   const savedCard = await card.save();   savedCards.push(savedCard);
+            } catch (error) {
+                console.error("Error saving card:", error);
+            }
+        }
+
+
 
         console.log("Final flashcards being sent:", flashcards); // Add this line
         res.json({ flashcards });

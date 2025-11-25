@@ -16,7 +16,7 @@ router.post('/generate', upload.single('pdf'), AICardFunctions.generateFlashcard
 router.post('/', cardFuncts.createCard);
 
 //Get route to get all card with a given deckID.
-router.get('/deck/:deckID', cardFuncts.getAllCards);
+router.get('/:deckID', cardFuncts.getAllCards);
 
 //GET route to get a specific card identified by cardID.
 router.get('/:cardID', cardFuncts.getCard);

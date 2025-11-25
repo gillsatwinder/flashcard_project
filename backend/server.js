@@ -56,11 +56,17 @@ app.get('/', (req, res) => {
 
 
 
-
 // Connect to MongoDB
 mongoose.connect(MONGODB_URI)
-  .then(() => {
+  .then(async () => {
     console.log('Connected to MongoDB');
+    
+    // Drop the old userID index if it exists
+    try {
+      await mongoose.connection.db.collection('users').dropIndex('userID_1');
+    } catch (err) {
+    }
+    
     app.listen(PORT, () => {
       console.log(`Server is running on port ${PORT}`);
     });

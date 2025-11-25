@@ -10,30 +10,21 @@ exports.createUser = async (req, res) => {
     let inEmail = req.body.email;
     let inUsername = req.body.username;
     let inPassword = req.body.password;
-    let inUserID = Math.ceil(Math.random()*10000) //Chosen at random for the sake of testing. Will be verified to be free in later implementation
 
     //Verify that email is not already in use.
     const emailTest = await User.findOne({ email: inEmail });
-    if(emailTest) return res.status(400).json({ message: 'Account already exists with that email address' });
-    
+    if (emailTest) return res.status(400).json({ message: 'Account already exists with that email address' });
+
     //Verify that username is not already in use
-    const usernameTest = await User.findOne({username: inUsername });
-    if(usernameTest) return res.status(400).json({ message: 'Username already in use' });
-    
-    //Ensure that new userID is generated.
-    let userIDTest = await User.findOne({ userID: inUserID });
-    while(userIDTest){
-      inUserID++;
-      userIDTest = await User.findOne({ inUserID });
-    }
-    
+    const usernameTest = await User.findOne({ username: inUsername });
+    if (usernameTest) return res.status(400).json({ message: 'Username already in use' });
+
 
     //Prepare data for new user
-    const UserData = { 
-        email: inEmail, 
-        username: inUsername, 
-        password: inPassword, 
-        userID: inUserID
+    const UserData = {
+      email: inEmail,
+      username: inUsername,
+      password: inPassword,
     };
 
     //Create new user and save into the DB.
@@ -44,6 +35,9 @@ exports.createUser = async (req, res) => {
     res.status(400).json({ error: error.message });
   }
 };
+
+
+
 
 //Updates a User's DB entry.
 //Note: MongoDB's uniqueness requirements from the schema is used here to ensure
@@ -68,6 +62,9 @@ exports.updateUser = async (req, res) => {
   }
 }
 
+
+
+
 //Reads one user using the email address to search for it.
 exports.getUser = async (req, res) => {
   try {
@@ -85,6 +82,9 @@ exports.getUser = async (req, res) => {
   }
 }
 
+
+
+
 //Deletes a user identified using userID to find
 exports.deleteUser = async (req, res) => {
   try {
@@ -99,7 +99,7 @@ exports.deleteUser = async (req, res) => {
     }
 
     //Find all decks belonging to this user
-    const userDecks = await Deck.find({ userID: userID});
+    const userDecks = await Deck.find({ userID: userID });
 
     //Compile all deckIDs for to for Deck and Card deletion
     const deckIDs = userDecks.map(deck => deck.deckID);
@@ -111,8 +111,35 @@ exports.deleteUser = async (req, res) => {
     const deletedCards = await Card.deleteMany({ deckID: { $in: deckIDs } });
 
     //Return a report of how many decks and cards were deleted with the user.
-    res.status(200).json({ message: `User, ${deletedDecks.deletedCount} Deck(s), and ${deletedCards.deletedCount} Card(s) deleted.`});
+    res.status(200).json({ message: `User, ${deletedDecks.deletedCount} Deck(s), and ${deletedCards.deletedCount} Card(s) deleted.` });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 }
+
+
+
+  exports.loginUser = async (req, res) => {
+    try {
+      const { email, password } = req.body;
+
+      if (!email || !password) { return res.status(400).json({ message: 'Email and password are required' }); }
+
+
+      const user = await User.findOne({ email });
+      if (!user) { return res.status(404).json({ message: 'Invalid login.' }); }
+      // Using the 'user' defined throught the email search to check the password. Saves loading time rather than starting a new search.
+      if (user.password !== password) { return res.status(401).json({ message: 'Invalid email or password' }); }
+
+
+      // If passes all 'if' statements, then return a success.
+      console.log("User logged in successfully:", email);
+      return res.status(200).json({ message: 'Login successful', });
+
+    }
+    catch (error) {
+      console.log("Failed to login!!");
+      res.status(500).json({ error: error.message });
+    }
+  }
+

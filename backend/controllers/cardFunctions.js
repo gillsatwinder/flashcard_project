@@ -4,35 +4,32 @@ const Deck = require('../models/Deck');
 //creates a card 
 exports.createCard = async (req, res) => {
   try {
-    //Store the input values from the request body and generate a cardID
-    let inCardID = Math.ceil(Math.random() * 100000); // Generate unique cardID
-    let inDeckID = req.body.deckID;
-    let inQSide = req.body.qside;
-    let inASide = req.body.aside;
+
+
+    const { deckID, qSide, aSide, userEmail } = req.body; // Get userEmail from the request
+
+
+    // Verifying all necessary data is not empty.
+    if (!deckID) return res.status(400).json({ error: 'deckID is required' });
+    if (!qSide) return res.status(400).json({ error: 'Question side text cannot be empty' });
+    if (!aSide) return res.status(400).json({ error: 'Answer side text cannot be empty' });
+    if (!userEmail) return res.status(400).json({ error: 'userEmail is required' });
+
+    const cardData = { cardID: Math.floor(Math.random() * 10000), deckID, userEmail, qSide, aSide };
 
     //Ensure that the deckID belongs to existing deck.
-    const deckIDTest = await Deck.findOne({deckID: inDeckID});
-    if(!deckIDTest) return res.status(404).json({ error: 'Deck not found' });
+    const deckIDTest = await Deck.findOne({ deckID: deckID });
+    if (!deckIDTest) return res.status(404).json({ error: 'Deck not found' });
 
     //Ensure that the cardID generated is unique.
-    let cardIDTest = await Card.findOne({cardID: inCardID});
-    while(cardIDTest){
-      inCardID++;
-      cardIDTest = await Card.findOne({cardID: inCardID});
+    let cardIDTest = await Card.findOne({ cardID: cardData.cardID });
+    while (cardIDTest) {
+      cardData.cardID++;
+      cardIDTest = await Card.findOne({ cardID: cardData.cardID });
     }
 
-    //Verify that the Q-Side and A-Side text are not empty strings.
-    if(!inQSide) return res.status(400).json({ error: 'Question side text cannot be empty' });
-    else if(!inASide) return res.status(400).json({ error: 'Answer side text cannot be empty' });
 
-    //Prep new card data
-    const cardData = {
-      cardID: inCardID,
-      deckID: inDeckID,
-      qSide: inQSide,
-      aSide: inASide
-    };
-    
+
     //Create new card and save to the DB.
     const card = new Card(cardData);
     await card.save();
@@ -46,42 +43,42 @@ exports.createCard = async (req, res) => {
 //Updates a card identified by cardID
 exports.updateCard = async (req, res) => {
   try {
-    
+
     //Get the input values from the request parameters and body.
     const { cardID } = req.params;
     const { qside, aside } = req.body;
     let updatedCard;
 
     //Check if both are empty strings. Return 400 in this case.
-    if(!qside & !aside){
-      return res.status(400).json({message: "Question and Answer text cannot be empty strings."})
+    if (!qside && !aside) {
+      return res.status(400).json({ message: "Question and Answer text cannot be empty strings." })
     }
 
     //If Q-Side is empty, only update A-Side.
-    if(!qside){
+    if (!qside) {
       updatedCard = await Card.findOneAndUpdate(
         { cardID: cardID },
         { aSide: aside },
         { new: true } // return updated doc
       );
-    } 
+    }
     //If A-Side is empty, only update Q-Side.
-    else if(!aside){
+    else if (!aside) {
       updatedCard = await Card.findOneAndUpdate(
         { cardID: cardID },
         { qSide: qside },
         { new: true } // return updated doc
       );
-    } 
+    }
     //otherwise, update both values.
-    else{
+    else {
       updatedCard = await Card.findOneAndUpdate(
         { cardID: cardID },
         { qSide: qside, aSide: aside },
         { new: true } // return updated doc
       );
     }
-      
+
     //If no card could be found, return 404.
     if (!updatedCard) {
       return res.status(404).json({ message: 'Card not found.' });
@@ -120,12 +117,11 @@ exports.getAllCards = async (req, res) => {
   try {
     //Get the deckID from the request parameters then search for cards with the deckID.
     const { deckID } = req.params;
-    const cards = await Card.find({ deckID: deckID });
-    
-    //If no cards returned, return 404. (May choose to handle this differently)
-    if (cards.length === 0) {
-      return res.status(404).json({ message: 'No cards found for this deck.' });
-    }
+    const { userEmail } = req.query;
+
+    if (!userEmail) { return res.status(400).json({ message: 'userEmail is required' }); }
+
+    const cards = await Card.find({ deckID: deckID,  userEmail: userEmail  });
 
     //Return the cards if successful.
     res.status(200).json(cards);
@@ -141,7 +137,7 @@ exports.deleteCard = async (req, res) => {
     //Get the cardID from the request parameters and then search for it and delete it.
     const { cardID } = req.params;
     const deleted = await Card.findOneAndDelete({ cardID });
-    
+
     //Return 404 if the card could not be found.
     if (!deleted) {
       return res.status(404).json({ message: 'Card not found.' });
@@ -163,7 +159,7 @@ exports.deleteCardsByDeck = async (req, res) => {
 
     //Delete the cards with the deckID provided
     const result = await Card.deleteMany({ deckID: deckID });
-    
+
     //Return 404 if no cards were found to be deleted.
     if (result.deletedCount === 0) {
       return res.status(404).json({ message: 'No cards found to delete for this deck.' });

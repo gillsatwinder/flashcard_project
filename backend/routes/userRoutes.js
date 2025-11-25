@@ -14,5 +14,8 @@ router.get('/', userFuncts.getUser);
 //Delete /users/:id is for deleting a user's entry. This will may only be an admin ability.
 router.delete('/:userID', userFuncts.deleteUser);
 
+//POST request. This will check if the user's account exists and credentials match during sign-in.
+router.post('/login', userFuncts.loginUser);
+
 //Export the routes.
 module.exports = router;
