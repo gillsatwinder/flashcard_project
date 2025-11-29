@@ -5,6 +5,9 @@ const deckFuncts = require('../controllers/deckFunctions');
 //POST route to create a new deck.
 router.post('/', deckFuncts.createDeck);
 
+//GET route to retrieve a deck by title and userEmail (Must be before /:deckID)
+router.get('/lookup', deckFuncts.getDeckByTitle);
+
 //GET route to retrieve a deck by deckID
 router.get('/:deckID', deckFuncts.getDeck);
 
