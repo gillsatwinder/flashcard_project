@@ -9,6 +9,7 @@ import { useParams, Link, useOutletContext } from "react-router-dom";
 import { useState, useEffect } from "react";
 import "../styles/DeckPage.css";
 import AddItemForm from "../components/AddItemForm";
+import API_URL from "../config";
 
 function EditableCard({ card, onDelete, onSave }) {
     const [isEditing, setIsEditing] = useState(false);
@@ -157,13 +158,20 @@ function DeckPage() {
     const [isFavorite, setIsFavorite] = useState(false);
 
 
-
     useEffect(() => {
-        const loadCards = async () => {
+        const loadDeckAndCards = async () => {
             if (!currentUser?.email) return;
 
             try {
-                const response = await fetch(`http://localhost:5000/api/cards/${deckId}?userEmail=${encodeURIComponent(currentUser.email)}`, {
+                // Fetch Deck Details (for isFavorite)
+                const deckResponse = await fetch(`${API_URL}/api/decks/${deckId}`);
+                if (deckResponse.ok) {
+                    const deckData = await deckResponse.json();
+                    setIsFavorite(deckData.isFavorite || false);
+                }
+
+                // Fetch Cards
+                const response = await fetch(`${API_URL}/api/cards/${deckId}?userEmail=${encodeURIComponent(currentUser.email)}`, {
                     method: 'GET',
                     headers: { 'Content-Type': 'application/json' }
                 });
@@ -183,11 +191,11 @@ function DeckPage() {
 
 
             } catch (error) {
-                console.error('Error loading cards:', error);
+                console.error('Error loading deck/cards:', error);
             }
         };
 
-        loadCards();
+        loadDeckAndCards();
     }, [deckId, currentUser?.email]);
 
 
@@ -204,7 +212,7 @@ function DeckPage() {
         try {
             const requestBody = { qSide: formValues.front, aSide: formValues.back, userEmail: currentUser?.email, deckID: deckId };
 
-            const response = await fetch('http://localhost:5000/api/cards', {
+            const response = await fetch(`${API_URL}/api/cards`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', },
                 body: JSON.stringify({ qSide: formValues.front, aSide: formValues.back, userEmail: currentUser?.email, deckID: deckId })
@@ -238,7 +246,7 @@ function DeckPage() {
 
     const handleEdit = async (cardId, updatedValues) => {
         try {
-            const response = await fetch(`http://localhost:5000/api/cards/${cardId}`, {
+            const response = await fetch(`${API_URL}/api/cards/${cardId}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ qside: updatedValues.front, aside: updatedValues.back })
@@ -281,7 +289,7 @@ function DeckPage() {
 
 
         try {
-            const response = await fetch(`http://localhost:5000/api/cards/generate`, {
+            const response = await fetch(`${API_URL}/api/cards/generate`, {
                 method: 'POST',
                 body: formData,
             });
@@ -291,7 +299,7 @@ function DeckPage() {
             if (response.ok) {
                 const loadCards = async () => {
                     try {
-                        const cardsResponse = await fetch(`http://localhost:5000/api/cards/${deckId}?userEmail=${encodeURIComponent(currentUser.email)}`, {
+                        const cardsResponse = await fetch(`${API_URL}/api/cards/${deckId}?userEmail=${encodeURIComponent(currentUser.email)}`, {
                             method: 'GET',
                             headers: {
                                 'Content-Type': 'application/json'
@@ -341,14 +349,13 @@ function DeckPage() {
         }
     };
 
-
     const handleToggleFavorite = async () => {
         const currentFavorite = isFavorite;
         // Optimistic update
         setIsFavorite(!isFavorite);
 
         try {
-            const response = await fetch(`http://localhost:5000/api/decks/${deckId}/favorite`, {
+            const response = await fetch(`${API_URL}/api/decks/${deckId}/favorite`, {
                 method: 'PUT',
             });
 
@@ -379,7 +386,7 @@ function DeckPage() {
         setCards(prevCards => prevCards.filter(card => card.id !== cardId));
 
         try {
-            const response = await fetch(`http://localhost:5000/api/cards/${cardId}`, {
+            const response = await fetch(`${API_URL}/api/cards/${cardId}`, {
                 method: 'DELETE',
             });
 
