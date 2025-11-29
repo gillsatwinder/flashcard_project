@@ -33,7 +33,7 @@ function App() {
       <Route path="/dashboard" element={<Dashboard currentUser={currentUser} />}>
         <Route index element={<AllDecksView />} />
         <Route path="favorites" element={<AllDecksView />} />
-        <Route path="deck/:deckId" element={<DeckPage />} />
+        <Route path="deck/:deckName" element={<DeckPage />} />
       </Route>
     </Routes>
   );
