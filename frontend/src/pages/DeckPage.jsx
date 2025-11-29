@@ -9,8 +9,8 @@ import { useParams, Link, useOutletContext } from "react-router-dom";
 import { useState, useEffect } from "react";
 import "../styles/DeckPage.css";
 import AddItemForm from "../components/AddItemForm";
-import API_URL from "../config";
 import useDeckActions from "../hooks/useDeckActions";
+import useCardActions from "../hooks/useCardActions";
 
 function EditableCard({ card, onDelete, onSave }) {
     const [isEditing, setIsEditing] = useState(false);
@@ -85,8 +85,6 @@ function EditableCard({ card, onDelete, onSave }) {
 }
 
 
-
-
 function PDFModal({ isOpen, onClose, onSubmit }) {
     const [pdfFile, setPdfFile] = useState(null);
     const [numFlashcards, setNumFlashcards] = useState(10);
@@ -146,11 +144,9 @@ function PDFModal({ isOpen, onClose, onSubmit }) {
     );
 }
 
-
-
 function DeckPage() {
     const { currentUser } = useOutletContext();
-    const { deckName } = useParams(); // Changed from deckId to deckName
+    const { deckName } = useParams();
     const [currentDeckId, setCurrentDeckId] = useState(null);
     const [cards, setCards] = useState([]);
 
@@ -160,6 +156,7 @@ function DeckPage() {
     const [isFavorite, setIsFavorite] = useState(false);
 
     const { getDeckByTitle, toggleFavorite } = useDeckActions();
+    const { getCards, addCard, updateCard, deleteCard, generateCardsFromPDF } = useCardActions();
 
     // New Effect: Lookup Deck ID from Name
     useEffect(() => {
@@ -184,36 +181,23 @@ function DeckPage() {
             if (!currentUser?.email || !currentDeckId) return;
 
             try {
-                // Fetch Cards
-                const response = await fetch(`${API_URL}/api/cards/${currentDeckId}?userEmail=${encodeURIComponent(currentUser.email)}`, {
-                    method: 'GET',
-                    headers: { 'Content-Type': 'application/json' }
-                });
-
-
-                if (response.ok) {
-                    const data = await response.json();
-                    const mappedCards = data.map(card => ({
-                        id: card.cardID,
-                        front: card.qSide,
-                        back: card.aSide
-                    }));
-
-                    console.log("✅ Setting cards:", mappedCards);
-                    setCards(mappedCards);
-                } else if (response.status === 404 || response.status === 400) { setCards([]); }
-
+                const data = await getCards(currentDeckId, currentUser.email);
+                const mappedCards = data.map(card => ({
+                    id: card.cardID,
+                    front: card.qSide,
+                    back: card.aSide
+                }));
+                console.log("✅ Setting cards:", mappedCards);
+                setCards(mappedCards);
 
             } catch (error) {
-                console.error('Error loading cards:', error);
+                console.error("Error loading cards:", error);
+                setCards([]);
             }
         };
 
         loadCards();
-    }, [currentDeckId, currentUser?.email]);
-
-
-
+    }, [currentDeckId, currentUser?.email, getCards]);
 
 
     const handleAdd = async () => {
@@ -229,143 +213,77 @@ function DeckPage() {
 
         try {
             const requestBody = { qSide: formValues.front, aSide: formValues.back, userEmail: currentUser?.email, deckID: currentDeckId };
+            const data = await addCard(requestBody);
 
-            const response = await fetch(`${API_URL}/api/cards`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', },
-                body: JSON.stringify(requestBody)
-            });
-
-
-            const data = await response.json();
-
-
-            if (response.ok) {
-                const newCard = {
-                    id: data.card.cardID,
-                    front: formValues.front,
-                    back: formValues.back
-                };
-                setCards(prevCards => {
-                    const updated = [...prevCards, newCard];
-                    return updated;
-                });
-                setFormValues({ front: "", back: "" });
-                setShowForm(false);
-            } else { alert(data.message || 'Error creating card'); }
-
+            const newCard = {
+                id: data.card.cardID,
+                front: formValues.front,
+                back: formValues.back
+            };
+            setCards(prevCards => [...prevCards, newCard]);
+            setFormValues({ front: "", back: "" });
+            setShowForm(false);
 
         } catch (error) {
-            console.error('Error:', error);
-            alert('Failed to create card');
+            console.error("Error:", error);
+            alert("Failed to create card");
         }
     };
 
 
     const handleEdit = async (cardId, updatedValues) => {
         try {
-            const response = await fetch(`${API_URL}/api/cards/${cardId}`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ qside: updatedValues.front, aside: updatedValues.back })
-            });
+            const data = await updateCard(cardId, { qside: updatedValues.front, aside: updatedValues.back });
 
-            const data = await response.json();
+            setCards(prevCards =>
+                prevCards.map(card =>
+                    card.id === cardId
+                        ? { ...card, front: updatedValues.front, back: updatedValues.back }
+                        : card
+                )
+            );
 
-            if (response.ok) {
-                setCards(prevCards =>
-                    prevCards.map(card =>
-                        card.id === cardId
-                            ? { ...card, front: updatedValues.front, back: updatedValues.back }
-                            : card
-                    )
-                );
-
-                console.log("Card edited successfully!: ", data)
-            }
-            else { alert(data.message || 'Error with updating the card.') }
+            console.log("Card edited successfully!: ", data);
         }
         catch (error) {
-            console.error('Error:', error);
-            alert('Failed to update card');
+            console.error("Error:", error);
+            alert("Failed to update card");
         }
     }
-
-
-
-
-
-
 
     const handlePDFSubmit = async (pdfFile, numFlashcards) => {
         if (!currentDeckId) return;
 
         const formData = new FormData();
-
-        formData.append('pdf', pdfFile);
-        formData.append('numFlashcards', numFlashcards);
-        formData.append('deckID', currentDeckId);
-        formData.append('userEmail', currentUser?.email);
-
+        formData.append("pdf", pdfFile);
+        formData.append("numFlashcards", numFlashcards);
+        formData.append("deckID", currentDeckId);
+        formData.append("userEmail", currentUser?.email);
 
         try {
-            const response = await fetch(`${API_URL}/api/cards/generate`, {
-                method: 'POST',
-                body: formData,
-            });
+            const data = await generateCardsFromPDF(formData);
 
-            const data = await response.json();
+            // Reload cards after generation
+            try {
+                const cardsData = await getCards(currentDeckId, currentUser.email);
+                const mappedCards = cardsData.map(card => ({
+                    id: card.cardID,
+                    front: card.qSide,
+                    back: card.aSide
+                }));
 
-            if (response.ok) {
-                const loadCards = async () => {
-                    try {
-                        const cardsResponse = await fetch(`${API_URL}/api/cards/${currentDeckId}?userEmail=${encodeURIComponent(currentUser.email)}`, {
-                            method: 'GET',
-                            headers: {
-                                'Content-Type': 'application/json'
-                            }
-                        });
-
-
-                        if (cardsResponse.ok) {
-                            const cardsData = await cardsResponse.json();
-                            const mappedCards = cardsData.map(card => ({
-                                id: card.cardID,
-                                front: card.qSide,
-                                back: card.aSide
-                            }));
-
-                            console.log("✅ Setting cards:", mappedCards);
-                            setCards(mappedCards);
-                        }
-                        else if (cardsResponse.status === 404 || cardsResponse.status === 400) {
-                            setCards([]);
-                        }
-                        else {
-                            const errorData = await cardsResponse.json();
-                            alert(`Error: ${errorData.error}`);
-                        }
-
-
-                    }
-                    catch (error) {
-                        console.error('Error reloading cards: ', error);
-                    }
-                }
-
-
-                await loadCards();
-                alert(`Successfully generated ${data.flashcards.length} flashcards!`);
-
+                console.log("✅ Setting cards:", mappedCards);
+                setCards(mappedCards);
+            }
+            catch (error) {
+                console.error("Error reloading cards: ", error);
             }
 
-            else {
-                alert(`Error: ${data.error}`);
-            }
+            alert(`Successfully generated ${data.flashcards.length} flashcards!`);
 
         } catch (error) {
-            console.error('Error generating flashcards:', error);
-            alert('Failed to generate flashcards. Please try again.');
+            console.error("Error generating flashcards:", error);
+            alert("Failed to generate flashcards. Please try again.");
         }
     };
 
@@ -378,9 +296,9 @@ function DeckPage() {
 
         try {
             const data = await toggleFavorite(currentDeckId);
-            console.log('Favorite toggled successfully:', data);
+            console.log("Favorite toggled successfully:", data);
         } catch (error) {
-            console.error('Network error toggling favorite:', error);
+            console.error("Network error toggling favorite:", error);
             alert(`Error: ${error.message}`);
             // Revert on error
             setIsFavorite(currentFavorite);
@@ -388,7 +306,7 @@ function DeckPage() {
     };
 
     const handleDeleteCard = async (cardId) => {
-        if (!window.confirm('Are you sure you want to delete this card?')) {
+        if (!window.confirm("Are you sure you want to delete this card?")) {
             return;
         }
 
@@ -396,23 +314,13 @@ function DeckPage() {
         setCards(prevCards => prevCards.filter(card => card.id !== cardId));
 
         try {
-            const response = await fetch(`${API_URL}/api/cards/${cardId}`, {
-                method: 'DELETE',
-            });
+            const data = await deleteCard(cardId);
+            console.log("Card deleted successfully:", data.message);
 
-            const data = await response.json();
-
-            if (response.ok) {
-                console.log('Card deleted successfully:', data.message);
-            } else {
-                console.error('API Error:', data.error || data.message);
-                alert(`Error: ${data.error || data.message}`);
-                // Reload cards on error
-                window.location.reload();
-            }
         } catch (error) {
-            console.error('Network error deleting card:', error);
-            alert('Failed to delete card.');
+            console.error("Network error deleting card:", error);
+            alert(`Error: ${error.message}`);
+            // Reload cards on error
             window.location.reload();
         }
     };
