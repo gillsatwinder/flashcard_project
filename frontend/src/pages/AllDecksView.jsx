@@ -239,7 +239,7 @@ function AllDecksView() {
                                 {/* Card count not supported by backend currently */}
                             </div>
                             <div className="deck-card-footer">
-                                <Link to={`/dashboard/deck/${deck.id}`} className="view-btn">
+                                <Link to={`/dashboard/deck/${encodeURIComponent(deck.name)}`} className="view-btn">
                                     Open
                                 </Link>
                                 <button

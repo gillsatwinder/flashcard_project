@@ -149,7 +149,8 @@ function PDFModal({ isOpen, onClose, onSubmit }) {
 
 function DeckPage() {
     const { currentUser } = useOutletContext();
-    const { deckId } = useParams();
+    const { deckName } = useParams(); // Changed from deckId to deckName
+    const [currentDeckId, setCurrentDeckId] = useState(null);
     const [cards, setCards] = useState([]);
 
     const [showForm, setShowForm] = useState(false);
@@ -157,21 +158,40 @@ function DeckPage() {
     const [showPDFModal, setShowPDFModal] = useState(false);
     const [isFavorite, setIsFavorite] = useState(false);
 
-
+    // New Effect: Lookup Deck ID from Name
     useEffect(() => {
-        const loadDeckAndCards = async () => {
-            if (!currentUser?.email) return;
+        const fetchDeckId = async () => {
+            if (!currentUser?.email || !deckName) return;
 
             try {
-                // Fetch Deck Details (for isFavorite)
-                const deckResponse = await fetch(`${API_URL}/api/decks/${deckId}`);
-                if (deckResponse.ok) {
-                    const deckData = await deckResponse.json();
-                    setIsFavorite(deckData.isFavorite || false);
-                }
+                const encodedTitle = encodeURIComponent(deckName);
+                const encodedEmail = encodeURIComponent(currentUser.email);
+                const response = await fetch(`${API_URL}/api/decks/lookup?title=${encodedTitle}&userEmail=${encodedEmail}`);
 
+                if (response.ok) {
+                    const data = await response.json();
+                    setCurrentDeckId(data.deckID);
+                    setIsFavorite(data.isFavorite || false);
+                } else {
+                    console.error("Deck not found for name:", deckName);
+                    // Handle error (e.g., redirect or show message)
+                }
+            } catch (error) {
+                console.error("Error fetching deck ID:", error);
+            }
+        };
+
+        fetchDeckId();
+    }, [deckName, currentUser?.email]);
+
+    // Existing Effect: Load Cards (Dependent on currentDeckId)
+    useEffect(() => {
+        const loadCards = async () => {
+            if (!currentUser?.email || !currentDeckId) return;
+
+            try {
                 // Fetch Cards
-                const response = await fetch(`${API_URL}/api/cards/${deckId}?userEmail=${encodeURIComponent(currentUser.email)}`, {
+                const response = await fetch(`${API_URL}/api/cards/${currentDeckId}?userEmail=${encodeURIComponent(currentUser.email)}`, {
                     method: 'GET',
                     headers: { 'Content-Type': 'application/json' }
                 });
@@ -191,12 +211,12 @@ function DeckPage() {
 
 
             } catch (error) {
-                console.error('Error loading deck/cards:', error);
+                console.error('Error loading cards:', error);
             }
         };
 
-        loadDeckAndCards();
-    }, [deckId, currentUser?.email]);
+        loadCards();
+    }, [currentDeckId, currentUser?.email]);
 
 
 
@@ -208,14 +228,18 @@ function DeckPage() {
             alert("Please log in to add cards");
             return;
         }
+        if (!currentDeckId) {
+            alert("Deck not loaded.");
+            return;
+        }
 
         try {
-            const requestBody = { qSide: formValues.front, aSide: formValues.back, userEmail: currentUser?.email, deckID: deckId };
+            const requestBody = { qSide: formValues.front, aSide: formValues.back, userEmail: currentUser?.email, deckID: currentDeckId };
 
             const response = await fetch(`${API_URL}/api/cards`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', },
-                body: JSON.stringify({ qSide: formValues.front, aSide: formValues.back, userEmail: currentUser?.email, deckID: deckId })
+                body: JSON.stringify(requestBody)
             });
 
 
@@ -280,11 +304,13 @@ function DeckPage() {
 
 
     const handlePDFSubmit = async (pdfFile, numFlashcards) => {
+        if (!currentDeckId) return;
+
         const formData = new FormData();
 
         formData.append('pdf', pdfFile);
         formData.append('numFlashcards', numFlashcards);
-        formData.append('deckID', deckId);
+        formData.append('deckID', currentDeckId);
         formData.append('userEmail', currentUser?.email);
 
 
@@ -299,7 +325,7 @@ function DeckPage() {
             if (response.ok) {
                 const loadCards = async () => {
                     try {
-                        const cardsResponse = await fetch(`${API_URL}/api/cards/${deckId}?userEmail=${encodeURIComponent(currentUser.email)}`, {
+                        const cardsResponse = await fetch(`${API_URL}/api/cards/${currentDeckId}?userEmail=${encodeURIComponent(currentUser.email)}`, {
                             method: 'GET',
                             headers: {
                                 'Content-Type': 'application/json'
@@ -350,12 +376,14 @@ function DeckPage() {
     };
 
     const handleToggleFavorite = async () => {
+        if (!currentDeckId) return;
+
         const currentFavorite = isFavorite;
         // Optimistic update
         setIsFavorite(!isFavorite);
 
         try {
-            const response = await fetch(`${API_URL}/api/decks/${deckId}/favorite`, {
+            const response = await fetch(`${API_URL}/api/decks/${currentDeckId}/favorite`, {
                 method: 'PUT',
             });
 
@@ -411,7 +439,7 @@ function DeckPage() {
     <div className="deck-page">
         <Link to="/dashboard" className="back-button">← Back to All Decks</Link>
 
-        <h1>Deck ID: {deckId}</h1>
+        <h1>{deckName}</h1>
         <button onClick={() => setShowForm(true)}>+ Add Card</button>
 
         <button
