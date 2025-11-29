@@ -16,7 +16,8 @@
 }
 
 /* Ensure important UI blocks are transparent so homepage gradient shows through */
-.homepage, .homepage * {
+.homepage,
+.homepage * {
   background-color: transparent !important;
 }
 
@@ -47,6 +48,7 @@
   font-size: 2rem;
   animation: pulse 2s ease-in-out infinite;
 }
+
 .login-btn {
   padding: 0.75rem 2rem;
   border: 2px solid white;
@@ -65,6 +67,7 @@
   transform: translateY(-2px);
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
 }
+
 /* Center content */
 .main-content {
   max-width: 1200px;
@@ -157,4 +160,3 @@
   transform: translateY(-2px);
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2)
 }
-

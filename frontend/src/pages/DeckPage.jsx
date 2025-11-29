@@ -268,12 +268,6 @@ function DeckPage() {
         }
     }
 
-
-
-
-
-
-
     const handlePDFSubmit = async (pdfFile, numFlashcards) => {
         const formData = new FormData();
 
@@ -332,8 +326,8 @@ function DeckPage() {
                 await loadCards();
                 alert(`Successfully generated ${data.flashcards.length} flashcards!`);
             }
-            else { 
-                alert(`Error: ${data.error}`); 
+            else {
+                alert(`Error: ${data.error}`);
             }
         }
         catch (error) {
@@ -347,59 +341,58 @@ function DeckPage() {
 
     return (
         <div className="page">
-        <div className="page-content">
-        <div className="deck-page">
-            <Link to="/dashboard" className="back-button">← Back to All Decks</Link>
+            <div className="page-content">
+                <div className="deck-page">
+                    <Link to="/dashboard" className="back-button">← Back to All Decks</Link>
 
-            <h1>Deck ID: {deckId}</h1>
-            <button onClick={() => setShowForm(true)}>+ Add Card</button>
+                    <h1>Deck ID: {deckId}</h1>
+                    <button onClick={() => setShowForm(true)}>+ Add Card</button>
 
-            <button
-                onClick={() => setShowPDFModal(true)}
-                style={{
-                    backgroundColor: '#4CAF50',
-                    color: 'white',
-                    marginLeft: '10px'
-                }}
-            >
-                + Generate Cards From PDF (AI Powered)
-            </button>
-
-
-
-            {showForm && (
-                <AddItemForm
-                    fields={[
-                        { name: "front", placeholder: "Card Front" },
-                        { name: "back", placeholder: "Card Back" },
-                    ]}
-                    values={formValues}
-                    onChange={(field, value) => setFormValues({ ...formValues, [field]: value })}
-                    onSubmit={handleAdd}
-                    onCancel={() => setShowForm(false)}
-                />
-            )}
+                    <button
+                        onClick={() => setShowPDFModal(true)}
+                        style={{
+                            backgroundColor: '#4CAF50',
+                            color: 'white',
+                            marginLeft: '10px'
+                        }}
+                    >
+                        + Generate Cards From PDF (AI Powered)
+                    </button>
 
 
-            <PDFModal
-                isOpen={showPDFModal}
-                onClose={() => setShowPDFModal(false)}
-                onSubmit={handlePDFSubmit}
-            />
 
-            <div className="cards-grid">
-                {cards.map((card) => (
-                    <EditableCard
-                        key={card.id}
-                        card={card}
-                        onDelete={() => deleteCard(card.id)}
-                        onSave={(updated) => handleEdit(card.id, updated)}
+                    {showForm && (
+                        <AddItemForm
+                            fields={[
+                                { name: "front", placeholder: "Card Front" },
+                                { name: "back", placeholder: "Card Back" },
+                            ]}
+                            values={formValues}
+                            onChange={(field, value) => setFormValues({ ...formValues, [field]: value })}
+                            onSubmit={handleAdd}
+                            onCancel={() => setShowForm(false)}
+                        />
+                    )}
+
+
+                    <PDFModal
+                        isOpen={showPDFModal}
+                        onClose={() => setShowPDFModal(false)}
+                        onSubmit={handlePDFSubmit}
                     />
-                ))}
+
+                    <div className="cards-grid">
+                        {cards.map((card) => (
+                            <EditableCard
+                                key={card.id}
+                                card={card}
+                                onDelete={() => deleteCard(card.id)}
+                                onSave={(updated) => handleEdit(card.id, updated)}
+                            />
+                        ))}
+                    </div>
+                </div>
             </div>
-        </div>
-        </div>
-        <Footer />
         </div>
     );
 }

@@ -8,29 +8,29 @@ function Dashboard({ currentUser }) {
 
     return (
         <div className="page">
-        <div className="page-content">
-        <div className="dashboard-layout">
-            {/* Top bar */}
-            <header className="top-bar">
-                <div className="logo-text">Flashcard Dashboard</div>
-                <div className="user-controls">
-                    <div className="profile-icon">👤</div>
-                    <button className="logout-btn" onClick={() => navigate("/")}>
-                        Logout
-                    </button>
-                </div>
-            </header>
+            <div className="page-content">
+                <div className="dashboard-layout">
+                    {/* Top bar */}
+                    <header className="top-bar">
+                        <div className="logo-text">Flashcard Dashboard</div>
+                        <div className="user-controls">
+                            <div className="profile-icon">👤</div>
+                            <button className="logout-btn" onClick={() => navigate("/")}>
+                                Logout
+                            </button>
+                        </div>
+                    </header>
 
-            {/* Main content */}
-            <div className="content-wrapper">
-                <Sidebar />
-                <main className="main-content">
-                    <Outlet context={{currentUser}}/>
-                </main>
+                    {/* Main content */}
+                    <div className="content-wrapper">
+                        <Sidebar />
+                        <main className="main-content">
+                            <Outlet context={{ currentUser }} />
+                        </main>
+                    </div>
+                </div>
             </div>
-        </div>
-        </div>
-        <Footer />
+            <Footer />
         </div>
     );
 }

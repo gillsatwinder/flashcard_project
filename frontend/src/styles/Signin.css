@@ -1,5 +1,6 @@
 /* Signin.css */
 
+/* Styles for Signin Page */
 .signin-page {
   min-height: 100vh;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -10,15 +11,18 @@
   justify-content: center;
 }
 
+/* Container for signin form and image */
 signin-container {
   display: grid;
-  grid-template-columns: 1fr 1fr;   /* Perfect 50/50 */
+  grid-template-columns: 1fr 1fr;
+  /* Perfect 50/50 */
   width: 100%;
-  max-width: 1400px;               
+  max-width: 1400px;
   margin: 0 auto;
   gap: 4rem;
 }
 
+/* Card style for signin form */
 .signin-card {
   background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(10px);
@@ -28,19 +32,21 @@ signin-container {
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
 }
 
-
+/* Form group styles */
 .form-group {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
 }
 
+/* Form label styles */
 .form-group label {
   color: #333;
   font-weight: 600;
   font-size: 0.95rem;
 }
 
+/* Form input styles */
 .form-group input {
   padding: 1rem;
   border: 2px solid #e0e0e0;
@@ -51,16 +57,19 @@ signin-container {
   color: #333;
 }
 
+/* Input focus styles */
 .form-group input:focus {
   outline: none;
   border-color: #667eea;
   box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
 }
 
+/* Placeholder text styles */
 .form-group input::placeholder {
   color: #999;
 }
 
+/* Form options styles */
 .form-options {
   display: flex;
   justify-content: space-between;
@@ -68,19 +77,14 @@ signin-container {
   font-size: 0.9rem;
 }
 
-
+/* Header styles */
 .header {
   text-align: center;
   margin-bottom: 2rem;
-   color: #204dc9;
+  color: #204dc9;
 }
 
-.signin-form {
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-}
-
+/* Brand name styles */
 .brand-name {
   font-style: italic;
   font-weight: bold;
@@ -88,45 +92,54 @@ signin-container {
   margin-bottom: 24px;
 }
 
+/* Signin form styles */
 .signin-form {
   display: flex;
   flex-direction: column;
   gap: 16px;
 }
 
+/* Input styles for signin form */
 .signin-form input {
   padding: 10px;
   border: 2px solid rgba(128, 124, 124, 0.74);
   border-radius: 4px;
 }
 
+/* Button styles for signin form */
 .signin-form button {
   padding: 10px;
-  background-color: linear-gradient(135deg,  #8e2de2 0%, #4a00e0 100%);
+  background-color: linear-gradient(135deg, #8e2de2 0%, #4a00e0 100%);
   color: rgba(253, 249, 249, 0.986);
   border: 2px solid rgb(252, 245, 245);
   border-radius: 4px;
   cursor: pointer;
 }
 
+/* Button hover styles for signin form */
 .signin-form button:hover {
   background-color: #4c96d3;
 }
 
-.signup-text {
+/* Signin text styles */
+.signin-text {
   margin-top: 16px;
   font-size: 14px;
   color: #030303;
 }
 
-.signup-text a {
+/* Signin text link styles */
+.signin-text a {
   color: #007bff;
   text-decoration: none;
 }
 
-.signup-text a:hover {
+/* Signin text link hover styles */
+.signin-text a:hover {
   text-decoration: underline;
 }
+
+/* Submit button styles */
 .submit-btn {
   padding: 1.2rem;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -140,8 +153,8 @@ signin-container {
   margin-top: 0.5rem;
 }
 
+/* Submit button hover styles */
 .submit-btn:hover {
   transform: translateY(-2px);
   box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
 }
-

@@ -161,9 +161,6 @@ function AllDecksView() {
                 )}
             </div>
         </div>
-        </div>
-        <Footer />
-        </div>
     );
 }
 

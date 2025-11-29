@@ -1,5 +1,6 @@
-/* Signin.css */
+/* Signup.css */
 
+/* Styles for Signup Page */
 .signup-page {
   min-height: 100vh;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -10,15 +11,18 @@
   justify-content: center;
 }
 
+/* Container for signup form and image */
 .signup-container {
   display: grid;
-  grid-template-columns: 1fr 1fr;   /* Perfect 50/50 */
+  grid-template-columns: 1fr 1fr;
+  /* Perfect 50/50 */
   width: 100%;
-  max-width: 1400px;               
+  max-width: 1400px;
   margin: 0 auto;
   gap: 4rem;
 }
 
+/* Card style for signup form */
 .signup-card {
   background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(10px);
@@ -29,6 +33,7 @@
 }
 
 
+/* Form group styles */
 .form-group {
   display: flex;
   flex-direction: column;
@@ -68,21 +73,22 @@
   font-size: 0.9rem;
 }
 
-
-
-.signin-form {
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
+/* Header styles */
+.header {
+  text-align: center;
+  margin-bottom: 2rem;
+  color: #204dc9;
 }
 
+/* Brand name styles */
 .brand-name {
   font-style: italic;
   font-weight: bold;
-  color: #364dce;
+  color: #131212;
   margin-bottom: 24px;
 }
 
+/* Signup form styles */
 .signup-form {
   display: flex;
   flex-direction: column;
@@ -97,7 +103,7 @@
 
 .signup-form button {
   padding: 10px;
-  background-color: linear-gradient(135deg,  #8e2de2 0%, #4a00e0 100%);
+  background-color: linear-gradient(135deg, #8e2de2 0%, #4a00e0 100%);
   color: rgba(253, 249, 249, 0.986);
   border: 2px solid rgb(252, 245, 245);
   border-radius: 4px;
@@ -108,20 +114,21 @@
   background-color: #4c96d3;
 }
 
-.signin-text {
+.signup-text {
   margin-top: 16px;
   font-size: 14px;
   color: #030303;
 }
 
-.signin-text a {
+.signup-text a {
   color: #007bff;
   text-decoration: none;
 }
 
-.signin-text a:hover {
+.signup-text a:hover {
   text-decoration: underline;
 }
+
 .submit-btn {
   padding: 1.2rem;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -139,4 +146,3 @@
   transform: translateY(-2px);
   box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
 }
-

@@ -4,31 +4,31 @@ import "../styles/Homepage.css";
 import Footer from "../components/Footer";
 
 const Homepage = () => {
-  const Navigate = useNavigate();
-  
+  const navigate = useNavigate();
+
   return (
-  <div className="homepage">
+    <div className="homepage">
       {/* Top bar */}
       <header className="top-bar">
         <div className="brand-name">
           <span className="brain-icon">🧠</span>
           BrainFlip
         </div>
-        <button className="login-btn" onClick={() => Navigate("/signin")}>Login</button>
+        <button className="login-btn" onClick={() => navigate("/signin")}>Login</button>
       </header>
 
       {/* Center content */}
-        <main className="main-content">
+      <main className="main-content">
         <div className="hero-section">
           <h1 className="hero-title">
             Flip Your Way to <span className="highlight">A's</span>
           </h1>
           <p className="hero-description">
-            Master your learning with AI-powered flashcards, intelligent study tools, 
+            Master your learning with AI-powered flashcards, intelligent study tools,
             and real-time progress tracking. Study smarter, not harder.
           </p>
 
-          <button className="cta-button" onClick={() => Navigate("/signup")}>
+          <button className="cta-button" onClick={() => navigate("/signup")}>
             Get Started Free
           </button>
         </div>

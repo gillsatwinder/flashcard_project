@@ -1,75 +1,113 @@
 import React, { useState } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
 import "../styles/Signin.css";//change the path as needed
+import Footer from "../components/Footer";
 
-const Signin = ( { onLogin }) => {
+// Validation regex patterns
+const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).+$/;
 
-
+// Signin component
+const Signin = () => {
   const navigate = useNavigate();
-  const [formData, setFormData] = useState({
-    email: '',
-    password: '',
-  });
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
 
-
-
-  const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
-    });
+  const validate = () => {
+    if (!email.trim()) {
+      setError("Email is required.");
+      return false;
+    }
+    if (!emailRegex.test(email)) {
+      setError("Please enter a valid email address.");
+      return false;
+    }
+    if (!password) {
+      setError("Password is required.");
+      return false;
+    }
+    if (!passwordRegex.test(password)) {
+      setError("Password must include at least one uppercase, one lowercase letter, and one digit.");
+      return false;
+    }
+    setError("");
+    return true;
   };
 
-
-
-  const handleSubmit = async (e) => {
+  // perform sign-in request here; navigating locally for now
+    const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!validate()) return;
 
     try {
-      const response = await fetch('http://localhost:5000/api/users/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', },
-        body: JSON.stringify({ email: formData.email, password: formData.password })
+        const response = await fetch("http://localhost:5000/user/login", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email, password })
+        });
 
-      });
+        const data = await response.json();
 
-      const data = await response.json();
+        if (!response.ok) {
+            setError(data.message || "Invalid login");
+            return;
+        }
 
-      if (response.ok) { navigate('/dashboard');  console.log("Signed in successfully!: ", data);
-        onLogin({ email: formData.email });  }
-
-      else { alert(data.message || 'Incorrect login credentials.'); }
-
+        alert("Login successful!");
+        navigate("/dashboard");
+    } catch (err) {
+        console.error(err);
+        setError("Server error");
     }
-    catch (error) {
-      console.error('Error:', error);
+};
 
-    }
-  }
-
-
-
-
+// JSX for signin page
   return (
     <div className="signin-page">
-      <div className="signin-box">
-        <h1 className="brand-name">BRAINFLIP</h1>
-        <form className="signin-form" onSubmit={handleSubmit}>
+      <header className="top-bar">
+        <div className="brand-name">
+          <span className="brain-icon">🧠</span>
+          BrainFlip
+        </div>
+        <button className="login-btn" onClick={() => navigate("/")}>home</button>
+      </header>
+      <div className="signin-container">
+        <div className="signin-card">
+          <div className="header">
+            <h1> Welcome back!!</h1>
+            <p>sign in to your account</p>
+          </div>
+          <form className="signin-form" onSubmit={handleSubmit} noValidate>
+            <div classname="form-group">
+              <input
+                type="email"
+                placeholder="Email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+              />
+            </div>
+            <div classname="form-group">
+              <input
+                type="password"
+                placeholder="Password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
+            </div>
 
-          <input type="email" name="email" placeholder="Email" value={formData.email} onChange={handleChange} required />
+            {error && (
+              <div style={{ color: "#ff6666", marginTop: "0.2px", fontSize: "0.9rem" }}>{error}</div>
+            )}
 
-          <input type="password" name="password" placeholder="Password" value={formData.password} onChange={handleChange} required />
-
-          <button type="submit">Sign In</button>
-        </form>
-        <p className="signup-text">
-          Don’t have an account? <button  className="submit-btn" type="button" onClick={() => navigate("/signup")}>Signup</button>
-        </p>
+            <button className="submit-btn" type="submit">Sign In</button>
+          </form>
+          <p className="signup-text">
+            Don’t have an account? <button className="submit-btn" type="button" onClick={() => navigate("/signup")}>Signup</button>
+          </p>
+        </div>
       </div>
-      </div>
-      </div>
-
-      
+    </div>
   );
 };
 
