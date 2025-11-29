@@ -10,6 +10,7 @@ import { useState, useEffect } from "react";
 import "../styles/DeckPage.css";
 import AddItemForm from "../components/AddItemForm";
 import API_URL from "../config";
+import useDeckActions from "../hooks/useDeckActions";
 
 function EditableCard({ card, onDelete, onSave }) {
     const [isEditing, setIsEditing] = useState(false);
@@ -158,31 +159,24 @@ function DeckPage() {
     const [showPDFModal, setShowPDFModal] = useState(false);
     const [isFavorite, setIsFavorite] = useState(false);
 
+    const { getDeckByTitle, toggleFavorite } = useDeckActions();
+
     // New Effect: Lookup Deck ID from Name
     useEffect(() => {
         const fetchDeckId = async () => {
             if (!currentUser?.email || !deckName) return;
 
             try {
-                const encodedTitle = encodeURIComponent(deckName);
-                const encodedEmail = encodeURIComponent(currentUser.email);
-                const response = await fetch(`${API_URL}/api/decks/lookup?title=${encodedTitle}&userEmail=${encodedEmail}`);
-
-                if (response.ok) {
-                    const data = await response.json();
-                    setCurrentDeckId(data.deckID);
-                    setIsFavorite(data.isFavorite || false);
-                } else {
-                    console.error("Deck not found for name:", deckName);
-                    // Handle error (e.g., redirect or show message)
-                }
+                const data = await getDeckByTitle(deckName, currentUser.email);
+                setCurrentDeckId(data.deckID);
+                setIsFavorite(data.isFavorite || false);
             } catch (error) {
                 console.error("Error fetching deck ID:", error);
             }
         };
 
         fetchDeckId();
-    }, [deckName, currentUser?.email]);
+    }, [deckName, currentUser?.email, getDeckByTitle]);
 
     // Existing Effect: Load Cards (Dependent on currentDeckId)
     useEffect(() => {
@@ -383,23 +377,11 @@ function DeckPage() {
         setIsFavorite(!isFavorite);
 
         try {
-            const response = await fetch(`${API_URL}/api/decks/${currentDeckId}/favorite`, {
-                method: 'PUT',
-            });
-
-            const data = await response.json();
-
-            if (response.ok) {
-                console.log('Favorite toggled successfully:', data);
-            } else {
-                console.error('API Error:', data.error);
-                alert(`Error: ${data.error}`);
-                // Revert on error
-                setIsFavorite(currentFavorite);
-            }
+            const data = await toggleFavorite(currentDeckId);
+            console.log('Favorite toggled successfully:', data);
         } catch (error) {
             console.error('Network error toggling favorite:', error);
-            alert('Failed to connect to server.');
+            alert(`Error: ${error.message}`);
             // Revert on error
             setIsFavorite(currentFavorite);
         }

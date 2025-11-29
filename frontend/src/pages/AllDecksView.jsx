@@ -1,5 +1,5 @@
 /*
-Latest Update: 10/25/25
+Latest Update: 11/29/25
 Description: AllDecksView component to display and manage all decks.
 */
 import { Link, useLocation } from "react-router-dom";
@@ -7,7 +7,7 @@ import { useState, useEffect } from "react";
 import { useOutletContext } from "react-router-dom";
 import AddItemForm from "../components/AddItemForm";
 import "../styles/AllDecksView.css";
-import API_URL from "../config";
+import useDeckActions from "../hooks/useDeckActions";
 
 
 function AllDecksView() {
@@ -16,6 +16,8 @@ function AllDecksView() {
 
     const { currentUser } = useOutletContext(); // Get the currentUser from the Outlet in App.jsx.
     const [decks, setDecks] = useState([]);
+
+    const { getUserDecks, createDeck, toggleFavorite, deleteDeck } = useDeckActions();
 
 
     // state for showing add deck form and form values
@@ -30,30 +32,21 @@ function AllDecksView() {
             if (!currentUser?.email) return;
 
             try {
-                // Note: You'll need to update the backend route to use userEmail
-                const encodedEmail = encodeURIComponent(currentUser.email);
-                const response = await fetch(`${API_URL}/api/decks/user/${encodedEmail}`, {
-                    method: 'GET',
-                    headers: { 'Content-Type': 'application/json' }
-                });
-
-                if (response.ok) {
-                    const data = await response.json();
-                    const mappedDecks = data.map(deck => ({
-                        id: deck.deckID,
-                        name: deck.title,
-                        // cardCount: deck.cardCount || 0, // Still not supported by backend
-                        isFavorite: deck.isFavorite || false
-                    }));
-                    setDecks(mappedDecks);
-                }
+                const data = await getUserDecks(currentUser.email);
+                const mappedDecks = data.map(deck => ({
+                    id: deck.deckID,
+                    name: deck.title,
+                    // cardCount: deck.cardCount || 0, // Still not supported by backend
+                    isFavorite: deck.isFavorite || false
+                }));
+                setDecks(mappedDecks);
             } catch (error) {
                 console.error('Error loading decks:', error);
             }
         };
 
         loadDecks();
-    }, [currentUser?.email, setDecks]);
+    }, [currentUser?.email, getUserDecks]);
 
 
 
@@ -82,29 +75,19 @@ function AllDecksView() {
         }
 
         try {
-            const response = await fetch(`${API_URL}/api/decks`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ title: trimmedName, userEmail: currentUser.email })
-            });
+            const data = await createDeck(trimmedName, currentUser.email);
 
-            const data = await response.json();
-
-            if (response.ok) {
-                setDecks(prevDecks => [...prevDecks, {
-                    id: data.deck.deckID,
-                    name: trimmedName,
-                    isFavorite: false
-                }]);
-                setFormValues({ name: "" });
-                setShowForm(false);
-                console.log("Deck created successfully!", data);
-            } else {
-                alert(data.error || 'Error creating deck');
-            }
+            setDecks(prevDecks => [...prevDecks, {
+                id: data.deck.deckID,
+                name: trimmedName,
+                isFavorite: false
+            }]);
+            setFormValues({ name: "" });
+            setShowForm(false);
+            console.log("Deck created successfully!", data);
         } catch (error) {
             console.error('Error:', error);
-            alert('Failed to create deck');
+            alert(error.message || 'Failed to create deck');
         }
     };
 
@@ -122,27 +105,11 @@ function AllDecksView() {
         );
 
         try {
-            const response = await fetch(`${API_URL}/api/decks/${deckId}/favorite`, {
-                method: 'PUT',
-            });
-
-            const data = await response.json();
-
-            if (response.ok) {
-                console.log('Favorite toggled successfully:', data);
-            } else {
-                console.error('API Error:', data.error);
-                alert(`Error: ${data.error}`);
-                // Revert on error
-                setDecks(prevDecks =>
-                    prevDecks.map(deck =>
-                        deck.id === deckId ? { ...deck, isFavorite: currentDeck.isFavorite } : deck
-                    )
-                );
-            }
+            const data = await toggleFavorite(deckId);
+            console.log('Favorite toggled successfully:', data);
         } catch (error) {
             console.error('Network error toggling favorite:', error);
-            alert('Failed to connect to server.');
+            alert(`Error: ${error.message}`);
             // Revert on error
             setDecks(prevDecks =>
                 prevDecks.map(deck =>
@@ -162,24 +129,13 @@ function AllDecksView() {
         setDecks(prevDecks => prevDecks.filter(deck => deck.id !== deckId));
 
         try {
-            const response = await fetch(`${API_URL}/api/decks/${deckId}`, {
-                method: 'DELETE',
-            });
-
-            const data = await response.json();
-
-            if (response.ok) {
-                console.log('Deck deleted successfully:', data.message);
-            } else {
-                console.error('API Error:', data.error);
-                alert(`Error: ${data.error}`);
-                // Note: We've already removed it optimistically, would need to reload to restore
-                // For now, just reload all decks
-                window.location.reload();
-            }
+            const data = await deleteDeck(deckId);
+            console.log('Deck deleted successfully:', data.message);
         } catch (error) {
             console.error('Network error deleting deck:', error);
-            alert('Failed to delete deck.');
+            alert(`Error: ${error.message}`);
+            // need to reload to restore
+            // For now, just reload all decks
             window.location.reload();
         }
     };
