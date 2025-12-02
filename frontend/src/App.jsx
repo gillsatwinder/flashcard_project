@@ -1,5 +1,5 @@
-import { Routes, Route } from "react-router-dom";
-import { useState, useEffect } from "react"; 
+import { Routes, Route, Navigate } from "react-router-dom";
+import { useState, useEffect } from "react";
 import Homepage from "./pages/Homepage.jsx";
 import Signin from "./pages/Signin.jsx";
 import Signup from "./pages/Signup.jsx";
@@ -17,13 +17,13 @@ function App() {
     const savedUser = localStorage.getItem('currentUser');
 
 
-    if (savedUser) {  setCurrentUser(JSON.parse(savedUser)); }
+    if (savedUser) { setCurrentUser(JSON.parse(savedUser)); }
   }, []);
 
-  
-  const loginUser = (userData) => {   setCurrentUser(userData);   localStorage.setItem('currentUser', JSON.stringify(userData));  };
 
-  
+  const loginUser = (userData) => { setCurrentUser(userData); localStorage.setItem('currentUser', JSON.stringify(userData)); };
+
+
   return (
     <Routes>
       <Route path="/" element={<Homepage />} />
@@ -32,7 +32,9 @@ function App() {
 
       <Route path="/dashboard" element={<Dashboard currentUser={currentUser} />}>
         <Route index element={<AllDecksView />} />
-        <Route path="deck/:deckId" element={<DeckPage currentUser={currentUser} />} />
+        <Route path="favorites" element={<AllDecksView />} />
+        <Route path="deck" element={<Navigate to="/dashboard" replace />} />
+        <Route path="deck/:deckName" element={<DeckPage />} />
       </Route>
     </Routes>
   );

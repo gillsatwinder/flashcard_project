@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
 import '../styles/Signup.css';
+import API_URL from '../config';
 
 const Signup = () => {
     const navigate = useNavigate();
@@ -28,7 +29,7 @@ const Signup = () => {
         }
 
         try {
-            const response = await fetch('http://localhost:5000/api/users', {
+            const response = await fetch(`${API_URL}/api/users`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

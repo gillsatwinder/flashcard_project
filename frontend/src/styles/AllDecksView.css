@@ -16,6 +16,12 @@
   border-bottom: 1px solid #e0e0e0;
 }
 
+.header-buttons {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
 /* another design for .header-section
 .header-section {
   display: flex;
@@ -33,6 +39,30 @@
   color: #333;
   margin: 0;
 }
+.filter-btn {
+  background-color: #757575;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 20px;
+  font-size: 15px;
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+}
+
+.filter-btn:hover {
+  background-color: #616161;
+  transform: translateY(-1px);
+}
+
+.filter-active {
+  background-color: #FFC107;
+}
+
+.filter-active:hover {
+  background-color: #FFA000;
+}
+
 .add-deck-btn {
   background-color: #2196f3;
   color: white;
@@ -79,10 +109,40 @@
 }
 
 /* Card internal */
+.deck-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
 .deck-card-header h3 {
   font-size: 18px;
   color: #333;
   margin-bottom: 8px;
+  flex: 1;
+}
+
+.favorite-icon-btn {
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  transition: color 0.2s ease, transform 0.1s ease;
+  padding: 0;
+  margin-left: 8px;
+}
+
+.deck-card-header .favorite-icon-btn {
+  color: #757575;
+}
+
+.deck-card-header .favorite-icon-btn.favorited {
+  color: #FFC107;
+}
+
+.deck-card-header button.favorite-icon-btn:hover {
+  color: #FFC107;
+  transform: scale(1.2);
 }
 
 .deck-card-body p {

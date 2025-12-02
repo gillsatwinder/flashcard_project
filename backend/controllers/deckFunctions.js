@@ -35,8 +35,10 @@ exports.createDeck = async (req, res) => {
     //Create new deck and save it to the DB.
     const deck = new Deck(deckData);  // Use Deck constructor
     await deck.save();
+    console.log(`Deck created: ID ${deck.deckID}, Title "${title}", User ${userEmail}`);
     res.status(201).json({ message: 'Deck created successfully', deck });
   } catch (error) {
+    console.error("Error creating deck:", error);
     res.status(400).json({ error: error.message });
   }
 };
@@ -60,8 +62,10 @@ exports.updateDeck = async (req, res) => {
     }
 
     //Return success otherwise.
+    console.log(`Deck updated: ID ${deckID}, New Title "${updatedDeck.title}"`);
     res.json({ message: 'Deck updated successfully', deck: updatedDeck });
   } catch (err) {
+    console.error("Error updating deck:", err);
     res.status(400).json({ error: err.message });
   }
 };
@@ -84,6 +88,28 @@ exports.getDeck = async (req, res) => {
     //Return the deck if successful.
     res.json(deck);
   } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+//Retrieves a deck by Title and User Email
+exports.getDeckByTitle = async (req, res) => {
+  try {
+    const { title, userEmail } = req.query;
+
+    if (!title || !userEmail) {
+      return res.status(400).json({ error: 'Title and userEmail are required' });
+    }
+
+    const deck = await Deck.findOne({ title: title, userEmail: userEmail });
+
+    if (!deck) {
+      return res.status(404).json({ message: 'Deck not found' });
+    }
+
+    res.json(deck);
+  } catch (err) {
+    console.error('Error finding deck by title:', err);
     res.status(500).json({ error: err.message });
   }
 };
@@ -127,8 +153,10 @@ exports.deleteDeck = async (req, res) => {
     const cascade = await Card.deleteMany({ deckID: deckID });
 
     //Return success if the deck was deleted.
+    console.log(`Deck deleted: ID ${deckID} and ${cascade.deletedCount} cards.`);
     res.json({ message: `Deck and ${cascade.deletedCount} card(s) deleted` });
   } catch (err) {
+    console.error("Error deleting deck:", err);
     res.status(500).json({ error: err.message });
   }
 };
@@ -149,5 +177,32 @@ exports.deleteAllDecks = async (req, res) => {
     res.json({ message: `${result.deletedCount} deck(s) deleted` });
   } catch (err) {
     res.status(500).json({ error: err.message });
+  }
+};
+
+
+
+//Toggles the favorite status of a deck
+exports.toggleFavorite = async (req, res) => {
+  try {
+    const { deckID } = req.params;
+
+    //Find the deck
+    const deck = await Deck.findOne({ deckID: deckID });
+    if (!deck) {
+      return res.status(404).json({ error: "Deck not found" });
+    }
+
+    //Toggle the isFavorite field
+    deck.isFavorite = !deck.isFavorite;
+    await deck.save();
+
+    res.json({
+      message: `Deck ${deck.isFavorite ? 'added to' : 'removed from'} favorites`,
+      deck: deck
+    });
+  } catch (error) {
+    console.error('Error toggling favorite:', error);
+    res.status(500).json({ error: error.message });
   }
 };

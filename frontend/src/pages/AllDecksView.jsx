@@ -1,24 +1,28 @@
 /*
-Latest Update: 10/25/25
+Latest Update: 11/29/25
 Description: AllDecksView component to display and manage all decks.
 */
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { useOutletContext } from "react-router-dom";
-import useItemManager from "../hooks/useItemManager";
 import AddItemForm from "../components/AddItemForm";
 import "../styles/AllDecksView.css";
+import useDeckActions from "../hooks/useDeckActions";
 
 
 function AllDecksView() {
+    const location = useLocation();
+    const isFavoritesPage = location.pathname === "/dashboard/favorites";
+
     const { currentUser } = useOutletContext(); // Get the currentUser from the Outlet in App.jsx.
     const [decks, setDecks] = useState([]);
-    const { addItem: addDeck, deleteItem: deleteDeck } = useItemManager([]);
+
+    const { getUserDecks, createDeck, toggleFavorite, deleteDeck } = useDeckActions();
 
 
     // state for showing add deck form and form values
     const [showForm, setShowForm] = useState(false); // State to control form visibility
-    const [formValues, setFormValues] = useState({ name: "", description: "" });
+    const [formValues, setFormValues] = useState({ name: "" });
 
 
 
@@ -28,30 +32,21 @@ function AllDecksView() {
             if (!currentUser?.email) return;
 
             try {
-                // Note: You'll need to update the backend route to use userEmail
-                const encodedEmail = encodeURIComponent(currentUser.email);
-                const response = await fetch(`http://localhost:5000/api/decks/user/${encodedEmail}`, {
-                    method: 'GET',
-                    headers: { 'Content-Type': 'application/json' }
-                });
-
-                if (response.ok) {
-                    const data = await response.json();
-                    const mappedDecks = data.map(deck => ({
-                        id: deck.deckID,
-                        name: deck.title,
-                        description: deck.description || "",
-                        cardCount: deck.cardCount || 0
-                    }));
-                    setDecks(mappedDecks);
-                }
+                const data = await getUserDecks(currentUser.email);
+                const mappedDecks = data.map(deck => ({
+                    id: deck.deckID,
+                    name: deck.title,
+                    // cardCount: deck.cardCount || 0, // Still not supported by backend
+                    isFavorite: deck.isFavorite || false
+                }));
+                setDecks(mappedDecks);
             } catch (error) {
                 console.error('Error loading decks:', error);
             }
         };
 
         loadDecks();
-    }, [currentUser?.email, setDecks]);
+    }, [currentUser?.email, getUserDecks]);
 
 
 
@@ -80,40 +75,86 @@ function AllDecksView() {
         }
 
         try {
-            const response = await fetch('http://localhost:5000/api/decks', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ title: trimmedName, description: formValues.description, userEmail: currentUser.email })
-            });
+            const data = await createDeck(trimmedName, currentUser.email);
 
-            const data = await response.json();
-
-            if (response.ok) {
-                setDecks(prevDecks => [...prevDecks, {
-                    id: data.deck.deckID,
-                    name: trimmedName,
-                    description: formValues.description,
-                    cardCount: 0
-                }]); setFormValues({ name: "", description: "" });
-                setShowForm(false);
-                console.log("Deck created successfully!", data);
-            } else {
-                alert(data.error || 'Error creating deck');
-            }
+            setDecks(prevDecks => [...prevDecks, {
+                id: data.deck.deckID,
+                name: trimmedName,
+                isFavorite: false
+            }]);
+            setFormValues({ name: "" });
+            setShowForm(false);
+            console.log("Deck created successfully!", data);
         } catch (error) {
             console.error('Error:', error);
-            alert('Failed to create deck');
+            alert(error.message || 'Failed to create deck');
         }
     };
+
+    // handle toggling favorite status
+    const handleToggleFavorite = async (deckId) => {
+        const currentDeck = decks.find(d => d.id === deckId);
+        if (!currentDeck) return;
+
+        // Optimistic update
+        const newFavoriteState = !currentDeck.isFavorite;
+        setDecks(prevDecks =>
+            prevDecks.map(deck =>
+                deck.id === deckId ? { ...deck, isFavorite: newFavoriteState } : deck
+            )
+        );
+
+        try {
+            const data = await toggleFavorite(deckId);
+            console.log('Favorite toggled successfully:', data);
+        } catch (error) {
+            console.error('Network error toggling favorite:', error);
+            alert(`Error: ${error.message}`);
+            // Revert on error
+            setDecks(prevDecks =>
+                prevDecks.map(deck =>
+                    deck.id === deckId ? { ...deck, isFavorite: currentDeck.isFavorite } : deck
+                )
+            );
+        }
+    };
+
+    // handle deleting a deck
+    const handleDeleteDeck = async (deckId) => {
+        if (!window.confirm('Are you sure you want to delete this deck? All cards in this deck will also be deleted.')) {
+            return;
+        }
+
+        // Optimistic delete
+        setDecks(prevDecks => prevDecks.filter(deck => deck.id !== deckId));
+
+        try {
+            const data = await deleteDeck(deckId);
+            console.log('Deck deleted successfully:', data.message);
+        } catch (error) {
+            console.error('Network error deleting deck:', error);
+            alert(`Error: ${error.message}`);
+            // need to reload to restore
+            // For now, just reload all decks
+            window.location.reload();
+        }
+    };
+
+    // Filter decks based on current route
+    const filteredDecks = isFavoritesPage
+        ? decks.filter(deck => deck.isFavorite)
+        : decks;
 
     // render the all decks view
     return (
         <div className="all-decks-container">
             <div className="header-section">
-                <h1 className="page-title">My Decks</h1>
-                <button className="add-deck-btn" onClick={() => setShowForm(true)}>
-                    + New Deck
-                </button>
+                <h1 className="page-title">{isFavoritesPage ? "My Favorites" : "My Decks"}</h1>
+                {!isFavoritesPage && (
+                    <button className="add-deck-btn" onClick={() => setShowForm(true)}>
+                        + New Deck
+                    </button>
+                )}
             </div>
 
             {showForm && (
@@ -121,7 +162,6 @@ function AllDecksView() {
                     <AddItemForm
                         fields={[
                             { name: "name", placeholder: "Deck Name" },
-                            { name: "description", placeholder: "Description" },
                         ]}
                         values={formValues}
                         onChange={handleChange}
@@ -132,25 +172,35 @@ function AllDecksView() {
             )}
 
             <div className="deck-grid">
-                {decks.length === 0 ? (
-                    <p className="empty-text">No decks yet. Start by creating one!</p>
+                {filteredDecks.length === 0 ? (
+                    <p className="empty-text">
+                        {isFavoritesPage
+                            ? "No favorite decks yet. Star some decks to see them here!"
+                            : "No decks yet. Start by creating one!"}
+                    </p>
                 ) : (
-                    decks.map((deck) => (
+                    filteredDecks.map((deck) => (
                         <div key={deck.id} className="deck-card">
                             <div className="deck-card-header">
                                 <h3>{deck.name}</h3>
+                                <button
+                                    className={deck.isFavorite ? "favorite-icon-btn favorited" : "favorite-icon-btn"}
+                                    onClick={() => handleToggleFavorite(deck.id)}
+                                    title={deck.isFavorite ? "Remove from favorites" : "Add to favorites"}
+                                >
+                                    {deck.isFavorite ? "★" : "☆"}
+                                </button>
                             </div>
                             <div className="deck-card-body">
-                                <p>{deck.description}</p>
-                                <p className="deck-count">Cards: {deck.cardCount}</p>
+                                {/* Card count not supported by backend currently */}
                             </div>
                             <div className="deck-card-footer">
-                                <Link to={`/dashboard/deck/${deck.id}`} className="view-btn">
+                                <Link to={`/dashboard/deck/${encodeURIComponent(deck.name)}`} className="view-btn">
                                     Open
                                 </Link>
                                 <button
                                     className="delete-btn"
-                                    onClick={() => deleteDeck(deck.id)}
+                                    onClick={() => handleDeleteDeck(deck.id)}
                                 >
                                     Delete
                                 </button>

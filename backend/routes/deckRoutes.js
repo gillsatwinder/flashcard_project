@@ -5,6 +5,9 @@ const deckFuncts = require('../controllers/deckFunctions');
 //POST route to create a new deck.
 router.post('/', deckFuncts.createDeck);
 
+//GET route to retrieve a deck by title and userEmail (Must be before /:deckID)
+router.get('/lookup', deckFuncts.getDeckByTitle);
+
 //GET route to retrieve a deck by deckID
 router.get('/:deckID', deckFuncts.getDeck);
 
@@ -13,6 +16,11 @@ router.get('/user/:userEmail', deckFuncts.getAllDecks);
 
 //PUT route to update a deck by deckID
 router.put('/:deckID', deckFuncts.updateDeck);
+
+
+
+//PUT route to toggle favorite status of a deck
+router.put('/:deckID/favorite', deckFuncts.toggleFavorite);
 
 //Delete route to remove a deck by deckID
 router.delete('/:deckID', deckFuncts.deleteDeck);

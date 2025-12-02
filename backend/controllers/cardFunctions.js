@@ -33,14 +33,16 @@ exports.createCard = async (req, res) => {
     //Create new card and save to the DB.
     const card = new Card(cardData);
     await card.save();
+    console.log(`Card created: ID ${card.cardID} in Deck ${deckID} for User ${userEmail}`);
     res.status(201).json({ message: 'Card created successfully', card });
   } catch (error) {
+    console.error("Error creating card:", error);
     res.status(400).json({ error: error.message });
   }
 };
 
 
-//Updates a card identified by cardID
+//Updates an existing card identified by cardID
 exports.updateCard = async (req, res) => {
   try {
 
@@ -85,8 +87,10 @@ exports.updateCard = async (req, res) => {
     }
 
     //Return the updated card if successful.
+    console.log(`Card updated: ID ${cardID}`);
     res.status(200).json(updatedCard);
   } catch (error) {
+    console.error("Error updating card:", error);
     res.status(500).json({ message: 'Error updating card', error: error.message });
   }
 };
@@ -144,8 +148,10 @@ exports.deleteCard = async (req, res) => {
     }
 
     //Return success message if deletion was successful.
+    console.log(`Card deleted: ID ${cardID}`);
     res.status(200).json({ message: 'Card deleted successfully.' });
   } catch (error) {
+    console.error("Error deleting card:", error);
     res.status(500).json({ message: 'Error deleting card', error: error.message });
   }
 };
