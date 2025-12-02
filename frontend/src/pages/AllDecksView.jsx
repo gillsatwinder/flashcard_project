@@ -2,21 +2,27 @@
 Latest Update: 11/29/25
 Description: AllDecksView component to display and manage all decks.
 */
-import { Link, useLocation } from "react-router-dom";
-import { useState, useEffect } from "react";
-import { useOutletContext } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom"; import { useState, useEffect } from "react";
 import AddItemForm from "../components/AddItemForm";
 import "../styles/AllDecksView.css";
 import Footer from "../components/Footer";
 import useDeckActions from "../hooks/useDeckActions";
+import { getUserID } from "../user/getUserFromToken";
 
 
 function AllDecksView() {
+    const navigate = useNavigate();
     const location = useLocation();
     const isFavoritesPage = location.pathname === "/dashboard/favorites";
 
-    const { currentUser } = useOutletContext(); // Get the currentUser from the Outlet in App.jsx.
     const [decks, setDecks] = useState([]);
+
+    const userID = getUserID();
+    if (!userID) {
+        alert("Please Login.")
+        navigate("/signin")
+    }
+
 
     const { getUserDecks, createDeck, toggleFavorite, deleteDeck } = useDeckActions();
 
@@ -29,11 +35,15 @@ function AllDecksView() {
 
     // Load decks from database
     useEffect(() => {
-        const loadDecks = async () => {
-            if (!currentUser?.email) return;
+        if (!userID) {
+            console.log("No userID, redirecting to signin");
+            navigate("/signin")
+        }
 
+
+        const loadDecks = async () => {
             try {
-                const data = await getUserDecks(currentUser.email);
+                const data = await getUserDecks(userID);
                 const mappedDecks = data.map(deck => ({
                     id: deck.deckID,
                     name: deck.title,
@@ -46,9 +56,10 @@ function AllDecksView() {
             }
         };
 
-        loadDecks();
-    }, [currentUser?.email, getUserDecks]);
-
+        if (userID) {
+            loadDecks();
+        }
+    }, [userID, getUserDecks]);
 
 
     // handle form input changes
@@ -64,9 +75,8 @@ function AllDecksView() {
             return;
         }
 
-        if (!currentUser?.email) {
+        if (!userID) {
             alert("Please log in to create decks");
-            return;
         }
 
         const isDuplicate = decks.some((deck) => deck.name.toLowerCase() === trimmedName.toLowerCase());
@@ -76,10 +86,10 @@ function AllDecksView() {
         }
 
         try {
-            const data = await createDeck(trimmedName, currentUser.email);
+            const data = await createDeck(trimmedName, userID);
 
             setDecks(prevDecks => [...prevDecks, {
-                id: data.deck.deckID,
+                id: data.deckID,
                 name: trimmedName,
                 isFavorite: false
             }]);

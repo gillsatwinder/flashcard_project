@@ -3,8 +3,8 @@ import API_URL from "../config";
 
 const useCardActions = () => {
 
-    const getCards = useCallback(async (deckId, userEmail) => {
-        const response = await fetch(`${API_URL}/api/cards/${deckId}?userEmail=${encodeURIComponent(userEmail)}`, {
+    const getCards = useCallback(async (deckId) => {
+        const response = await fetch(`${API_URL}/api/cards/getAll/${deckId}`, {
             method: "GET",
             headers: { "Content-Type": "application/json" }
         });
@@ -20,7 +20,7 @@ const useCardActions = () => {
     }, []);
 
     const addCard = useCallback(async (cardData) => {
-        const response = await fetch(`${API_URL}/api/cards`, {
+        const response = await fetch(`${API_URL}/api/cards/`, {
             method: "POST",
             headers: { "Content-Type": "application/json", },
             body: JSON.stringify(cardData)

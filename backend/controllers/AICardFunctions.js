@@ -10,7 +10,7 @@ const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 exports.generateFlashcards = async (req, res) => {
     try {
-        const { numFlashcards, deckID, userEmail } = req.body;
+        const { numFlashcards, deckID } = req.body;
         const pdfPath = req.file?.path;
 
 
@@ -79,7 +79,6 @@ exports.generateFlashcards = async (req, res) => {
             const cardData = { 
                 cardID: Date.now() + i, 
                 deckID: deckID, 
-                userEmail: userEmail, 
                 qSide: flashcard.question, 
                 aSide: flashcard.answer
             };

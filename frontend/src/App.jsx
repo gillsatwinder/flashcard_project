@@ -8,29 +8,14 @@ import AllDecksView from "./pages/AllDecksView.jsx";
 import DeckPage from "./pages/DeckPage.jsx";
 
 
-
 function App() {
-  const [currentUser, setCurrentUser] = useState(null);
-
-
-  useEffect(() => {
-    const savedUser = localStorage.getItem('currentUser');
-
-
-    if (savedUser) { setCurrentUser(JSON.parse(savedUser)); }
-  }, []);
-
-
-  const loginUser = (userData) => { setCurrentUser(userData); localStorage.setItem('currentUser', JSON.stringify(userData)); };
-
-
   return (
     <Routes>
       <Route path="/" element={<Homepage />} />
-      <Route path="/signin" element={<Signin onLogin={loginUser} />} />
+      <Route path="/signin" element={<Signin />} />
       <Route path="/signup" element={<Signup />} />
 
-      <Route path="/dashboard" element={<Dashboard currentUser={currentUser} />}>
+      <Route path="/dashboard" element={<Dashboard />}>
         <Route index element={<AllDecksView />} />
         <Route path="favorites" element={<AllDecksView />} />
         <Route path="deck" element={<Navigate to="/dashboard" replace />} />

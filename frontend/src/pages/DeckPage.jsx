@@ -5,13 +5,15 @@ Description: DeckPage component to display cards within a deck and allow adding 
 */
 
 
-import { useParams, Link, useOutletContext } from "react-router-dom";
+import { useParams, Link } from "react-router-dom";
 import { useState, useEffect } from "react";
 import "../styles/DeckPage.css";
 import AddItemForm from "../components/AddItemForm";
 import Footer from "../components/Footer";
 import useDeckActions from "../hooks/useDeckActions";
 import useCardActions from "../hooks/useCardActions";
+import { getUserID } from '../user/getUserFromToken';
+
 
 function EditableCard({ card, onDelete, onSave }) {
     const [isEditing, setIsEditing] = useState(false);
@@ -146,7 +148,7 @@ function PDFModal({ isOpen, onClose, onSubmit }) {
 }
 
 function DeckPage() {
-    const { currentUser } = useOutletContext();
+    console.log("DeckPage component is starting!");
     const { deckName } = useParams();
     const [currentDeckId, setCurrentDeckId] = useState(null);
     const [cards, setCards] = useState([]);
@@ -159,13 +161,19 @@ function DeckPage() {
     const { getDeckByTitle, toggleFavorite } = useDeckActions();
     const { getCards, addCard, updateCard, deleteCard, generateCardsFromPDF } = useCardActions();
 
+    const userID = getUserID();
+    console.log("UserID:", userID);
+    if (!userID) {
+        alert("Please log in to view this deck");
+    }
+
     // New Effect: Lookup Deck ID from Name
     useEffect(() => {
         const fetchDeckId = async () => {
-            if (!currentUser?.email || !deckName) return;
+            if (!userID || !deckName) return;
 
             try {
-                const data = await getDeckByTitle(deckName, currentUser.email);
+                const data = await getDeckByTitle(deckName, userID);
                 setCurrentDeckId(data.deckID);
                 setIsFavorite(data.isFavorite || false);
             } catch (error) {
@@ -174,15 +182,15 @@ function DeckPage() {
         };
 
         fetchDeckId();
-    }, [deckName, currentUser?.email, getDeckByTitle]);
+    }, [deckName, userID, getDeckByTitle]);
 
     // Existing Effect: Load Cards (Dependent on currentDeckId)
     useEffect(() => {
         const loadCards = async () => {
-            if (!currentUser?.email || !currentDeckId) return;
+            if (!userID || !currentDeckId) return;
 
             try {
-                const data = await getCards(currentDeckId, currentUser.email);
+                const data = await getCards(currentDeckId);
                 const mappedCards = data.map(card => ({
                     id: card.cardID,
                     front: card.qSide,
@@ -198,23 +206,16 @@ function DeckPage() {
         };
 
         loadCards();
-    }, [currentDeckId, currentUser?.email, getCards]);
+    }, [currentDeckId, userID, getCards]);
 
 
     const handleAdd = async () => {
-
-        if (!currentUser?.email) {
-            alert("Please log in to add cards");
-            return;
-        }
-        if (!currentDeckId) {
-            alert("Deck not loaded.");
-            return;
-        }
-
         try {
-            const requestBody = { qSide: formValues.front, aSide: formValues.back, userEmail: currentUser?.email, deckID: currentDeckId };
-            const data = await addCard(requestBody);
+            const requestBody = {
+                qSide: formValues.front,
+                aSide: formValues.back,
+                deckID: currentDeckId
+            }; const data = await addCard(requestBody);
 
             const newCard = {
                 id: data.card.cardID,
@@ -259,14 +260,18 @@ function DeckPage() {
         formData.append("pdf", pdfFile);
         formData.append("numFlashcards", numFlashcards);
         formData.append("deckID", currentDeckId);
-        formData.append("userEmail", currentUser?.email);
+
+
+        const userID = getUserID();
+        formData.append("userID", userID);
+
 
         try {
             const data = await generateCardsFromPDF(formData);
 
             // Reload cards after generation
             try {
-                const cardsData = await getCards(currentDeckId, currentUser.email);
+                const cardsData = await getCards(currentDeckId);
                 const mappedCards = cardsData.map(card => ({
                     id: card.cardID,
                     front: card.qSide,
@@ -288,6 +293,7 @@ function DeckPage() {
         }
     };
 
+
     const handleToggleFavorite = async () => {
         if (!currentDeckId) return;
 
@@ -296,66 +302,16 @@ function DeckPage() {
         setIsFavorite(!isFavorite);
 
         try {
-            const response = await fetch(`http://localhost:5000/api/cards/generate`, {
-                method: 'POST',
-                body: formData,
-            });
-
-            const data = await response.json();
-
-            if (response.ok) {
-                const loadCards = async () => {
-                    try {
-                        const cardsResponse = await fetch(`http://localhost:5000/api/cards/${deckId}?userEmail=${encodeURIComponent(currentUser.email)}`, {
-                            method: 'GET',
-                            headers: {
-                                'Content-Type': 'application/json'
-                            }
-                        });
-
-
-                        if (cardsResponse.ok) {
-                            const cardsData = await cardsResponse.json();
-                            const mappedCards = cardsData.map(card => ({
-                                id: card.cardID,
-                                front: card.qSide,
-                                back: card.aSide
-                            }));
-
-                            console.log("✅ Setting cards:", mappedCards);
-                            setCards(mappedCards);
-                        }
-                        else if (cardsResponse.status === 404 || cardsResponse.status === 400) {
-                            setCards([]);
-                        }
-                        else {
-                            const errorData = await cardsResponse.json();
-                            alert(`Error: ${errorData.error}`);
-                        }
-
-
-                    }
-                    catch (error) {
-                        console.error('Error reloading cards: ', error);
-                    }
-                }
-
-
-                await loadCards();
-                alert(`Successfully generated ${data.flashcards.length} flashcards!`);
-            }
-            else {
-                alert(`Error: ${data.error}`);
-            }
-            const data = await toggleFavorite(currentDeckId);
-            console.log("Favorite toggled successfully:", data);
+            const fav = await toggleFavorite(currentDeckId);
+            console.log("Favorite toggled successfully:", fav);
         } catch (error) {
             console.error("Network error toggling favorite:", error);
             alert(`Error: ${error.message}`);
             // Revert on error
             setIsFavorite(currentFavorite);
         }
-    };
+    }
+
 
     const handleDeleteCard = async (cardId) => {
         if (!window.confirm("Are you sure you want to delete this card?")) {
@@ -378,58 +334,58 @@ function DeckPage() {
     };
 
     return (
-    <div className="deck-page">
-        <Link to="/dashboard" className="back-button">← Back to All Decks</Link>
+        <div className="deck-page">
+            <Link to="/dashboard" className="back-button">← Back to All Decks</Link>
 
-        <h1>{deckName}</h1>
-        <button onClick={() => setShowForm(true)}>+ Add Card</button>
+            <h1>{deckName}</h1>
+            <button onClick={() => setShowForm(true)}>+ Add Card</button>
 
-        <button
-            onClick={() => setShowPDFModal(true)}
-            className="btn-pdf"
-        >
-            + Generate Cards From PDF (AI Powered)
-        </button>
+            <button
+                onClick={() => setShowPDFModal(true)}
+                className="btn-pdf"
+            >
+                + Generate Cards From PDF (AI Powered)
+            </button>
 
-        <button
-            onClick={handleToggleFavorite}
-            className={isFavorite ? "btn-favorite-active" : "btn-favorite"}
-        >
-            {isFavorite ? "★ Favorited" : "☆ Favorite"}
-        </button>
-
-
-        {showForm && (
-            <AddItemForm
-                fields={[
-                    { name: "front", placeholder: "Card Front" },
-                    { name: "back", placeholder: "Card Back" },
-                ]}
-                values={formValues}
-                onChange={(field, value) => setFormValues({ ...formValues, [field]: value })}
-                onSubmit={handleAdd}
-                onCancel={() => setShowForm(false)}
-            />
-        )}
+            <button
+                onClick={handleToggleFavorite}
+                className={isFavorite ? "btn-favorite-active" : "btn-favorite"}
+            >
+                {isFavorite ? "★ Favorited" : "☆ Favorite"}
+            </button>
 
 
-        <PDFModal
-            isOpen={showPDFModal}
-            onClose={() => setShowPDFModal(false)}
-            onSubmit={handlePDFSubmit}
-        />
-
-        <div className="cards-grid">
-            {cards.map((card) => (
-                <EditableCard
-                    key={card.id}
-                    card={card}
-                    onDelete={() => handleDeleteCard(card.id)}
-                    onSave={(updated) => handleEdit(card.id, updated)}
+            {showForm && (
+                <AddItemForm
+                    fields={[
+                        { name: "front", placeholder: "Card Front" },
+                        { name: "back", placeholder: "Card Back" },
+                    ]}
+                    values={formValues}
+                    onChange={(field, value) => setFormValues({ ...formValues, [field]: value })}
+                    onSubmit={handleAdd}
+                    onCancel={() => setShowForm(false)}
                 />
-            ))}
+            )}
+
+
+            <PDFModal
+                isOpen={showPDFModal}
+                onClose={() => setShowPDFModal(false)}
+                onSubmit={handlePDFSubmit}
+            />
+
+            <div className="cards-grid">
+                {cards.map((card) => (
+                    <EditableCard
+                        key={card.id}
+                        card={card}
+                        onDelete={() => handleDeleteCard(card.id)}
+                        onSave={(updated) => handleEdit(card.id, updated)}
+                    />
+                ))}
+            </div>
         </div>
-    </div>
     );
 }
 

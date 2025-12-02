@@ -95,13 +95,13 @@ exports.getDeck = async (req, res) => {
 //Retrieves a deck by Title and User Email
 exports.getDeckByTitle = async (req, res) => {
   try {
-    const { title, userEmail } = req.query;
+    const { title, userID } = req.query;
 
-    if (!title || !userEmail) {
-      return res.status(400).json({ error: 'Title and userEmail are required' });
+    if (!title || !userID) {
+      return res.status(400).json({ error: 'Title and userID are required' });
     }
 
-    const deck = await Deck.findOne({ title: title, userEmail: userEmail });
+    const deck = await Deck.findOne({ title: title, userID: userID });
 
     if (!deck) {
       return res.status(404).json({ message: 'Deck not found' });
@@ -122,10 +122,6 @@ exports.getAllDecks = async (req, res) => {
     //Get the userID from the request parameters and search for decks with this userID.
     const { userID } = req.params;
     const decks = await Deck.find({ userID: userID }).select({deckID: 1, title: 1, isFavorite: 1, _id: 0});
-
-    if (decks.length === 0) {
-      return res.status(404).json({ message: 'No decks found for this user.' });
-    }
 
     //Return the decks found.
     res.json(decks);

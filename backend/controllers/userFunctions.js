@@ -2,6 +2,9 @@ const User = require('../models/User');
 const Deck = require('../models/Deck');
 const Card = require('../models/Card');
 
+const jwt = require('jsonwebtoken');
+
+
 //Function for creating a User
 exports.createUser = async (req, res) => {
   try {
@@ -22,10 +25,10 @@ exports.createUser = async (req, res) => {
 
     //Verify userID is not already in use. Increment and try again if it is.
     let userIDTest = await User.findOne({ userID: inUserID });
-        while (userIDTest) {
-          inUserID++;
-          userIDTest = await User.findOne({ userID: inUserID });
-        }
+    while (userIDTest) {
+      inUserID++;
+      userIDTest = await User.findOne({ userID: inUserID });
+    }
 
     //Prepare data for new user
     const UserData = {
@@ -78,7 +81,7 @@ exports.updateUser = async (req, res) => {
       );
     }
     //If password isn't empty, update it.
-    if(password){
+    if (password) {
       updatedUser = await User.findOneAndUpdate(
         { userID: userID },
         { password: password },
@@ -93,7 +96,7 @@ exports.updateUser = async (req, res) => {
 
     //Return the updated User if successful.
     console.log(`User updated: ID ${userID}`);
-    res.status(200).json({success: true});
+    res.status(200).json({ success: true });
   } catch (error) {
     console.error("Error updating User:", error);
     res.status(500).json({ message: 'Error updating User', error: error.message });
@@ -111,7 +114,7 @@ exports.getUser = async (req, res) => {
     if (email) {
       const user = await User.findOne({ email });
       if (!user) return res.status(404).json({ message: 'User not found' });
-      return res.json({userID: user.userID});
+      return res.json({ userID: user.userID });
     }
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -166,9 +169,26 @@ exports.loginUser = async (req, res) => {
     if (user.password !== password) { return res.status(401).json({ message: 'Invalid email or password' }); }
 
 
-    // If passes all 'if' statements, then return a success.
+    // Creating token. Carries userID, email, and name.
+    const token = jwt.sign(
+      {
+        userID: user.userID,
+        email: user.email,
+        username: user.username
+      },
+      process.env.JWT_SECRET || 'your-secret-key', // Use environment variable for security
+      { expiresIn: '24h' } // Token expires in 24 hours
+    );
+
     console.log("User logged in successfully:", email);
-    return res.status(200).json({ userID: user.userID});
+    return res.status(200).json({
+      token: token,
+      user: {
+        userID: user.userID,
+        email: user.email,
+        username: user.username
+      }
+    });
 
   }
   catch (error) {

@@ -3,11 +3,11 @@ import API_URL from "../config";
 
 const useDeckActions = () => {
 
-    const createDeck = useCallback(async (title, userEmail) => {
+    const createDeck = useCallback(async (title, userID) => {
         const response = await fetch(`${API_URL}/api/decks`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ title, userEmail })
+            body: JSON.stringify({ title, userID })
         });
 
         const data = await response.json();
@@ -41,10 +41,14 @@ const useDeckActions = () => {
         return data;
     }, []);
 
-    const getDeckByTitle = useCallback(async (title, userEmail) => {
+    const getDeckByTitle = useCallback(async (title, userID) => {
         const encodedTitle = encodeURIComponent(title);
-        const encodedEmail = encodeURIComponent(userEmail);
-        const response = await fetch(`${API_URL}/api/decks/lookup?title=${encodedTitle}&userEmail=${encodedEmail}`);
+        if (!userID) {
+            throw new Error('User ID is required');
+        }
+
+
+        const response = await fetch(`${API_URL}/api/decks/lookup?title=${encodedTitle}&userID=${userID}`);
 
         const data = await response.json();
         if (!response.ok) {
@@ -53,9 +57,13 @@ const useDeckActions = () => {
         return data;
     }, []);
 
-    const getUserDecks = useCallback(async (userEmail) => {
-        const encodedEmail = encodeURIComponent(userEmail);
-        const response = await fetch(`${API_URL}/api/decks/user/${encodedEmail}`, {
+    const getUserDecks = useCallback(async (userID) => {
+
+        if (!userID) {
+            throw new Error('User ID is required');
+        }
+
+        const response = await fetch(`${API_URL}/api/decks/user/${userID}`, {
             method: 'GET',
             headers: { 'Content-Type': 'application/json' }
         });

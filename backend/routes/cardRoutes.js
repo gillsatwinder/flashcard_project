@@ -5,7 +5,7 @@ const AICardFunctions = require('../controllers/AICardFunctions');
 const multer = require('multer');
 const upload = multer({ dest: 'uploads/' }); // Files go to uploads/ fold
 
-/*****************AI Card Routes *******************/
+/*****************AI Card Routes ***s****************/
 
 // POST /generate - creates new cards using chatGPT and a pdf
 router.post('/generate', upload.single('pdf'), AICardFunctions.generateFlashcards);
@@ -16,7 +16,7 @@ router.post('/generate', upload.single('pdf'), AICardFunctions.generateFlashcard
 router.post('/', cardFuncts.createCard);
 
 //Get route to get all card with a given deckID.
-router.get('/deck/:deckID', cardFuncts.getAllCards);
+router.get('/getAll/:deckID', cardFuncts.getAllCards);
 
 //GET route to get a specific card identified by cardID.
 router.get('/:cardID', cardFuncts.getCard);

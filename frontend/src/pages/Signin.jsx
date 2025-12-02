@@ -37,33 +37,35 @@ const Signin = () => {
   };
 
   // perform sign-in request here; navigating locally for now
-    const handleSubmit = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validate()) return;
 
     try {
-        const response = await fetch("http://localhost:5000/user/login", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ email, password })
-        });
+      const response = await fetch("http://localhost:5000/api/users/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password })
+      });
 
-        const data = await response.json();
+      const data = await response.json();
 
-        if (!response.ok) {
-            setError(data.message || "Invalid login");
-            return;
-        }
+      if (!response.ok) {
+        setError(data.message || "Invalid login");
+        return;
+      }
 
-        alert("Login successful!");
-        navigate("/dashboard");
-    } catch (err) {
-        console.error(err);
-        setError("Server error");
+      localStorage.setItem('token', data.token);
+
+      alert("Login successful!");
+      navigate("/dashboard");
+    } catch (error) {
+      console.error(error);
+      setError("Server error");
     }
-};
+  };
 
-// JSX for signin page
+  // JSX for signin page
   return (
     <div className="signin-page">
       <header className="top-bar">
@@ -80,7 +82,7 @@ const Signin = () => {
             <p>sign in to your account</p>
           </div>
           <form className="signin-form" onSubmit={handleSubmit} noValidate>
-            <div classname="form-group">
+            <div className="form-group">
               <input
                 type="email"
                 placeholder="Email"
@@ -88,7 +90,7 @@ const Signin = () => {
                 onChange={(e) => setEmail(e.target.value)}
               />
             </div>
-            <div classname="form-group">
+            <div className="form-group">
               <input
                 type="password"
                 placeholder="Password"

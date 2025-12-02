@@ -3,8 +3,13 @@ import Sidebar from "../components/Sidebar";
 import "../styles/Dashboard.css";
 import Footer from "../components/Footer";
 
-function Dashboard({ currentUser }) {
+function Dashboard() {
     const navigate = useNavigate();
+
+    const logout = () => {
+        localStorage.removeItem('token');
+        navigate("/");
+    };
 
     return (
         <div className="page">
@@ -15,7 +20,7 @@ function Dashboard({ currentUser }) {
                         <div className="logo-text">Flashcard Dashboard</div>
                         <div className="user-controls">
                             <div className="profile-icon">👤</div>
-                            <button className="logout-btn" onClick={() => navigate("/")}>
+                            <button className="logout-btn" onClick={logout}>
                                 Logout
                             </button>
                         </div>
@@ -25,7 +30,7 @@ function Dashboard({ currentUser }) {
                     <div className="content-wrapper">
                         <Sidebar />
                         <main className="main-content">
-                            <Outlet context={{ currentUser }} />
+                            <Outlet />
                         </main>
                     </div>
                 </div>
