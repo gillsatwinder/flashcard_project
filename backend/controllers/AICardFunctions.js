@@ -11,14 +11,12 @@ const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 exports.generateFlashcards = async (req, res) => {
     try {
         const { numFlashcards, deckID } = req.body;
-        const pdfPath = req.file?.path;
 
-
-        if (!pdfPath) {
+        if (!req.file || !req.file.buffer) {
             return res.status(400).json({ error: "No PDF file uploaded." });
         }
 
-        const pdfBuffer = await fs.readFile(pdfPath);
+        const pdfBuffer = req.file.buffer; 
         const pdfData = await pdfParse(pdfBuffer);
         const pdfText = pdfData.text;
 
@@ -76,14 +74,15 @@ exports.generateFlashcards = async (req, res) => {
         for (let i = 0; i < flashcards.length; i++) {
             const flashcard = flashcards[i];
 
-            const cardData = { 
-                cardID: Date.now() + i, 
-                deckID: deckID, 
-                qSide: flashcard.question, 
+            const cardData = {
+                cardID: Date.now() + i,
+                deckID: deckID,
+                qSide: flashcard.question,
                 aSide: flashcard.answer
             };
 
-            try { const card = new Card(cardData);   const savedCard = await card.save();   savedCards.push(savedCard);
+            try {
+                const card = new Card(cardData); const savedCard = await card.save(); savedCards.push(savedCard);
             } catch (error) {
                 console.error("Error saving card:", error);
             }
@@ -93,8 +92,6 @@ exports.generateFlashcards = async (req, res) => {
 
         console.log("Final flashcards being sent:", flashcards); // Add this line
         res.json({ flashcards });
-
-        await fs.unlink(pdfPath); // cleanup
 
     } catch (err) {
         console.error("Flashcard generation error:", err);

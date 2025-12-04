@@ -3,7 +3,13 @@ const router = express.Router();
 const cardFuncts = require('../controllers/cardFunctions');
 const AICardFunctions = require('../controllers/AICardFunctions');
 const multer = require('multer');
-const upload = multer({ dest: 'uploads/' }); // Files go to uploads/ fold
+
+const upload = multer({ 
+  storage: multer.memoryStorage(),
+  limits: {
+    fileSize: 10 * 1024 * 1024, // 10MB limit
+  }
+});
 
 /*****************AI Card Routes ***s****************/
 
