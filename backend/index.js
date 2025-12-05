@@ -34,13 +34,20 @@ app.use(express.urlencoded({ extended: true }));
 
 
 // Routes
-const userRoutes = require('./routes/userRoutes');
-const cardRoutes = require('./routes/cardRoutes');
-const deckRoutes = require('./routes/deckRoutes');
+try {
+  const userRoutes = require('./routes/userRoutes');
+  const cardRoutes = require('./routes/cardRoutes');
+  const deckRoutes = require('./routes/deckRoutes');
 
-app.use('/api/users', userRoutes);
-app.use('/api/cards', cardRoutes);
-app.use('/api/decks', deckRoutes);
+  app.use('/api/users', userRoutes);
+  app.use('/api/cards', cardRoutes);
+  app.use('/api/decks', deckRoutes);
+  
+  console.log('Routes loaded successfully');
+} 
+catch (error) {
+  console.error('Error loading routes:', error);
+}
 
 
 
