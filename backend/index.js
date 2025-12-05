@@ -78,14 +78,20 @@ const connectToDatabase = async () => {
   }
 
   try {
+    console.log('Attempting to connect to MongoDB...');
+    console.log('MONGODB_URI exists:', !!MONGODB_URI);
+
     await mongoose.connect(MONGODB_URI, {
-      serverSelectionTimeoutMS: 5000,
+      serverSelectionTimeoutMS: 10000, // Increased to 10 seconds
       socketTimeoutMS: 45000,
       bufferCommands: false,
-      bufferMaxEntries: 0
+      bufferMaxEntries: 0,
+      maxPoolSize: 10, // Limit connection pool
+      minPoolSize: 5
     });
+
     isConnected = true;
-    console.log('Connected to MongoDB');
+    console.log('✅ Connected to MongoDB successfully');
 
     try {
       await mongoose.connection.db.collection('users').dropIndex('userID_1');
@@ -95,8 +101,9 @@ const connectToDatabase = async () => {
     }
   }
   catch (error) {
-    console.error('MongoDB connection error:', error);
-    throw error;
+    console.error('❌ MongoDB connection failed:', error.message);
+    isConnected = false;
+    throw new Error(`Database connection failed: ${error.message}`);
   }
 };
 
