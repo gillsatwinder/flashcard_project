@@ -13,29 +13,16 @@ const MONGODB_URI = process.env.MONGODB_URI;
 
 
 // Allows Use Of Following Connections.
-app.use(cors({
-  origin: function (origin, callback) {
-    // Allow requests with no origin (like mobile apps, Postman, etc.)
-    if (!origin) {
-      return callback(null, true);
-    } 
-
-    // Allow localhost for development
-    if (origin && origin.includes('localhost')) {
-      return callback(null, true);
-    } 
-
-    // Allow any Vercel deployment
-    if (origin && origin.includes('vercel.app')) {
-      return callback(null, true);
-    }
-
-    callback(null, true);
-  },
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
-}));
+// Simple CORS override for debugging
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  if (req.method === 'OPTIONS') {
+    return res.sendStatus(200);
+  }
+  next();
+});
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
