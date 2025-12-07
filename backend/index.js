@@ -33,13 +33,13 @@ app.use(express.urlencoded({ extended: true }));
 
 
 
-  const userRoutes = require('./routes/userRoutes');
-  const cardRoutes = require('./routes/cardRoutes');
-  const deckRoutes = require('./routes/deckRoutes');
+const userRoutes = require('./routes/userRoutes');
+const cardRoutes = require('./routes/cardRoutes');
+const deckRoutes = require('./routes/deckRoutes');
 
-  app.use('/api/users', userRoutes);
-  app.use('/api/cards', cardRoutes);
-  app.use('/api/decks', deckRoutes);
+app.use('/api/users', userRoutes);
+app.use('/api/cards', cardRoutes);
+app.use('/api/decks', deckRoutes);
 
 
 
@@ -63,29 +63,30 @@ app.get('/', (req, res) => {
 
 
 // Connect To MongoDB. 
-async function connectToDatabase() {
+let isConnected = false;
+
+const connectToDatabase = async () => {
+  if (isConnected) {
+    return;
+  }
+
   try {
-    
-    if (mongoose.connection.readyState === 1) {
-      return mongoose.connection;
-    }
-    
-    console.log("Attempting to connect to MongoDB...");
+    console.log('Attempting to connect to MongoDB...');
+    console.log('MONGODB_URI exists:', !!process.env.MONGODB_URI);
 
     await mongoose.connect(process.env.MONGODB_URI, {
       serverSelectionTimeoutMS: 10000,
       socketTimeoutMS: 45000
     });
-    
-    console.log("✅ Connected to MongoDB successfully");
 
-    return mongoose.connection;
-  } 
-  catch (error) {
-    console.error("❌ MongoDB connection failed:", error);
-    throw error;
+    isConnected = true;
+    console.log('✅ Connected to MongoDB successfully');
+  } catch (error) {
+    console.error('❌ MongoDB connection failed:', error.message);
+    isConnected = false;
+    throw new Error(`Database connection failed: ${error.message}`);
   }
-}
+};
 
 
 
