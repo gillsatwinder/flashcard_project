@@ -5,7 +5,12 @@ let mongoServer;
 
 const connectDB = async () => {
     if (mongoServer) return; // Prevent multiple connections
-    
+
+    // Close Any Existing Connections.
+    if (mongoose.connection.readyState !== 0) {
+        await mongoose.disconnect();
+    }
+
     mongoServer = await MongoMemoryServer.create();
     const uri = mongoServer.getUri();
 

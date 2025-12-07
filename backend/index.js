@@ -47,17 +47,17 @@ const connectToDatabase = async () => {
 
 
 
-
-// Middleware to ensure database connection
-app.use(async (req, res, next) => {
-  try {
-    await connectToDatabase();
-    next();
-  } catch (error) {
-    res.status(500).json({ error: 'Database connection failed' });
-  }
-});
-
+if (process.env.NODE_ENV !== 'test') {
+  // Middleware to ensure database connection
+  app.use(async (req, res, next) => {
+    try {
+      await connectToDatabase();
+      next();
+    } catch (error) {
+      res.status(500).json({ error: 'Database connection failed' });
+    }
+  });
+}
 
 
 

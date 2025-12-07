@@ -4,7 +4,7 @@ const { connectDB, closeDB, clearDB } = require('./setup');
 const User = require('../models/User');
 
 describe('User Creation Endpoint (POST /api/users)', () => {
-    
+
     // Connect to in-memory DB before tests run
     beforeAll(async () => {
         await connectDB();
@@ -33,7 +33,7 @@ describe('User Creation Endpoint (POST /api/users)', () => {
 
         expect(res.statusCode).toEqual(201);
         expect(res.body).toHaveProperty('UserID');
-        
+
         // Verify user is actually in the database
         const user = await User.findOne({ email: userData.email });
         expect(user).toBeTruthy();
@@ -42,12 +42,15 @@ describe('User Creation Endpoint (POST /api/users)', () => {
 
     it('should return 400 if email already exists', async () => {
         // Create initial user
-        await User.create({
-            userID: 1,
+        const initialUserData = {
             email: 'duplicate@example.com',
             username: 'originalUser',
             password: 'password123'
-        });
+        };
+
+        await request(app)
+            .post('/api/users')
+            .send(initialUserData)
 
         // Attempt to create another user with same email
         const duplicateData = {
@@ -66,17 +69,20 @@ describe('User Creation Endpoint (POST /api/users)', () => {
 
     it('should return 400 if username already exists', async () => {
         // Create initial user
-        await User.create({
-            userID: 1,
-            email: 'user1@example.com',
-            username: 'duplicateName',
+        const initialUserData = {
+            email: 'duplicate@example.com',
+            username: 'originalUser',
             password: 'password123'
-        });
+        };
+
+        await request(app)
+            .post('/api/users')
+            .send(initialUserData);
 
         // Attempt to create another user with same username
         const duplicateData = {
             email: 'user2@example.com',
-            username: 'duplicateName',
+            username: 'originalUser',
             password: 'password123'
         };
 
@@ -98,7 +104,7 @@ describe('User Creation Endpoint (POST /api/users)', () => {
         const res = await request(app)
             .post('/api/users')
             .send(invalidData);
-            
+
         // The controller catches the error and returns 400 with the error message
         expect(res.statusCode).toEqual(400);
         expect(res.body.error).toBeDefined();
