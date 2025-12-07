@@ -81,8 +81,6 @@ app.get('/', (req, res) => {
 
 
 
-
-
 // For local development only
 if (process.env.NODE_ENV !== 'production') {
   connectToDatabase().then(() => {

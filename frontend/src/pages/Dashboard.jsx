@@ -17,7 +17,8 @@ function Dashboard() {
                 <div className="dashboard-layout">
                     {/* Top bar */}
                     <header className="top-bar">
-                        <div className="logo-text">Flashcard Dashboard</div>
+                        <div className="logo-text">
+                             <span className="brain-icon">🧠</span>BrainFlip</div>
                         <div className="user-controls">
                             <div className="profile-icon">👤</div>
                             <button className="logout-btn" onClick={logout}>

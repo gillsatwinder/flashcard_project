@@ -9,7 +9,6 @@ import { useParams, Link } from "react-router-dom";
 import { useState, useEffect } from "react";
 import "../styles/DeckPage.css";
 import AddItemForm from "../components/AddItemForm";
-import Footer from "../components/Footer";
 import useDeckActions from "../hooks/useDeckActions";
 import useCardActions from "../hooks/useCardActions";
 import { getUserID } from '../get-user-info/getUserFromToken';
