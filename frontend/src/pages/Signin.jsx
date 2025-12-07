@@ -38,6 +38,10 @@ const Signin = () => {
 
   // perform sign-in request here; navigating locally for now
   const handleSubmit = async (e) => {
+    console.log("API_URL is:", API_URL);
+    console.log("Full URL:", `${API_URL}/api/users/login`);
+
+
     e.preventDefault();
     if (!validate()) return;
 

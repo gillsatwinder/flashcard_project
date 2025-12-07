@@ -7,22 +7,14 @@ require('dotenv').config();   //{ path: '../.env' } Use This For Local Dev.
 
 const app = express();
 const PORT = process.env.PORT || 8080;
-const MONGODB_URI = process.env.MONGODB_URI;
 
 
-
-
-// Allows Use Of Following Connections.
-// Simple CORS override for debugging
-app.use((req, res, next) => {
-  res.header('Access-Control-Allow-Origin', '*');
-  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-  if (req.method === 'OPTIONS') {
-    return res.sendStatus(200);
-  }
-  next();
-});
+// CORS Protection. Allows All Connections.
+app.use(cors({
+  origin: '*',
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -31,23 +23,53 @@ app.use(express.urlencoded({ extended: true }));
 
 
 
+// Connect To MongoDB. 
+let isConnected = false;
+
+const connectToDatabase = async () => {
+  if (isConnected) {
+    return;
+  }
+
+  try {
+    await mongoose.connect(process.env.MONGODB_URI, {
+      serverSelectionTimeoutMS: 10000,
+      socketTimeoutMS: 45000
+    });
+
+    isConnected = true;
+    console.log('✅ Connected to MongoDB successfully');
+  } catch (error) {
+    isConnected = false;
+    throw new Error(`Database connection failed: ${error.message}`);
+  }
+};
 
 
-// Routes
-try {
-  const userRoutes = require('./routes/userRoutes');
-  const cardRoutes = require('./routes/cardRoutes');
-  const deckRoutes = require('./routes/deckRoutes');
 
-  app.use('/api/users', userRoutes);
-  app.use('/api/cards', cardRoutes);
-  app.use('/api/decks', deckRoutes);
 
-  console.log('Routes loaded successfully');
-}
-catch (error) {
-  console.error('Error loading routes:', error);
-}
+// Middleware to ensure database connection
+app.use(async (req, res, next) => {
+  try {
+    await connectToDatabase();
+    next();
+  } catch (error) {
+    res.status(500).json({ error: 'Database connection failed' });
+  }
+});
+
+
+
+
+
+const userRoutes = require('./routes/userRoutes');
+const cardRoutes = require('./routes/cardRoutes');
+const deckRoutes = require('./routes/deckRoutes');
+
+app.use('/api/users', userRoutes);
+app.use('/api/cards', cardRoutes);
+app.use('/api/decks', deckRoutes);
+
 
 
 
@@ -66,46 +88,6 @@ app.get('/', (req, res) => {
   });
 });
 
-
-
-
-// Connect To MongoDB. 
-async function connectToDatabase() {
-  try {
-    
-    if (mongoose.connection.readyState === 1) {
-      return mongoose.connection;
-    }
-    
-    console.log("Attempting to connect to MongoDB...");
-
-    await mongoose.connect(process.env.MONGODB_URI, {
-      serverSelectionTimeoutMS: 10000,
-      socketTimeoutMS: 45000
-    });
-    
-    console.log("Connected to MongoDB successfully");
-
-    return mongoose.connection;
-  } 
-  catch (error) {
-    console.error(" MongoDB connection failed:", error);
-    throw error;
-  }
-}
-
-
-
-
-// Middleware to ensure database connection
-app.use(async (req, res, next) => {
-  try {
-    await connectToDatabase();
-    next();
-  } catch (error) {
-    res.status(500).json({ error: 'Database connection failed' });
-  }
-});
 
 
 

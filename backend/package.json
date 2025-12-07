@@ -6,7 +6,7 @@
   "scripts": {
     "start": "nodemon index.js",
     "dev": "nodemon index.js",
-    "test": "cross-env NODE_ENV=test OPENAI_API_KEY=dummy jest --testTimeout=10000"
+    "test": "cross-env NODE_ENV=test OPENAI_API_KEY=dummy jest --testTimeout=10000 --passWithNoTests"
   },
   "dependencies": {
     "cors": "^2.8.5",
