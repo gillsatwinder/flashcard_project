@@ -33,8 +33,6 @@ app.use(express.urlencoded({ extended: true }));
 
 
 
-// Routes
-try {
   const userRoutes = require('./routes/userRoutes');
   const cardRoutes = require('./routes/cardRoutes');
   const deckRoutes = require('./routes/deckRoutes');
@@ -43,11 +41,6 @@ try {
   app.use('/api/cards', cardRoutes);
   app.use('/api/decks', deckRoutes);
 
-  console.log('Routes loaded successfully');
-}
-catch (error) {
-  console.error('Error loading routes:', error);
-}
 
 
 
@@ -63,6 +56,18 @@ app.get('/', (req, res) => {
       cards: '/api/cards',
       decks: '/api/decks'
     }
+  });
+});
+
+
+
+// Ping Endpoint To Keep Functions Warm.
+app.get('/ping', (req, res) => {
+  res.json({ 
+    status: 'alive', 
+    timestamp: new Date(),
+    memory: process.memoryUsage(),
+    uptime: process.uptime()
   });
 });
 
