@@ -12,8 +12,6 @@ const MONGODB_URI = process.env.MONGODB_URI;
 
 
 
-// Allows Use Of Following Connections.
-// Simple CORS override for debugging
 app.use((req, res, next) => {
   res.header('Access-Control-Allow-Origin', '*');
   res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
@@ -27,37 +25,6 @@ app.use((req, res, next) => {
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-
-
-
-
-
-
-const userRoutes = require('./routes/userRoutes');
-const cardRoutes = require('./routes/cardRoutes');
-const deckRoutes = require('./routes/deckRoutes');
-
-app.use('/api/users', userRoutes);
-app.use('/api/cards', cardRoutes);
-app.use('/api/decks', deckRoutes);
-
-
-
-
-// Root route for testing
-app.get('/', (req, res) => {
-  res.json({
-    message: 'Flashcard API Server',
-    status: 'Server is running!',
-    port: PORT,
-    endpoints: {
-      health: '/health',
-      users: '/api/users',
-      cards: '/api/cards',
-      decks: '/api/decks'
-    }
-  });
-});
 
 
 
@@ -100,6 +67,39 @@ app.use(async (req, res, next) => {
     res.status(500).json({ error: 'Database connection failed' });
   }
 });
+
+
+
+
+
+const userRoutes = require('./routes/userRoutes');
+const cardRoutes = require('./routes/cardRoutes');
+const deckRoutes = require('./routes/deckRoutes');
+
+app.use('/api/users', userRoutes);
+app.use('/api/cards', cardRoutes);
+app.use('/api/decks', deckRoutes);
+
+
+
+
+// Root route for testing
+app.get('/', (req, res) => {
+  res.json({
+    message: 'Flashcard API Server',
+    status: 'Server is running!',
+    port: PORT,
+    endpoints: {
+      health: '/health',
+      users: '/api/users',
+      cards: '/api/cards',
+      decks: '/api/decks'
+    }
+  });
+});
+
+
+
 
 
 
