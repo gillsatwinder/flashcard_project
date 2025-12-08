@@ -3,6 +3,7 @@ import Sidebar from "../components/Sidebar";
 import "../styles/Dashboard.css";
 import Footer from "../components/Footer";
 
+
 function Dashboard() {
     const navigate = useNavigate();
 
@@ -18,11 +19,11 @@ function Dashboard() {
                     {/* Top bar */}
                     <header className="top-bar">
                         <div className="logo-text">
-                             <span className="brain-icon">🧠</span>BrainFlip</div>
+                             <h2><span className="brain-icon">🧠</span>BrainFlip</h2></div>
                         <div className="user-controls">
                             <div className="profile-icon">👤</div>
                             <button className="logout-btn" onClick={logout}>
-                                Logout
+                                Logout 
                             </button>
                         </div>
                     </header>

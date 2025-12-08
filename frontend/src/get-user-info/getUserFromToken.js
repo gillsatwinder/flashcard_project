@@ -27,6 +27,12 @@ export const getUserID = () => {
   return user ? user.userID : null;
 };
 
+// user name
+export const getUsername = () => {
+  const user = getUserFromToken();
+  return user ? user.username : null;
+};
+
 export const isLoggedIn = () => {
   return getUserFromToken() !== null;
 };

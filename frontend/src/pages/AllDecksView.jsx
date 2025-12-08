@@ -8,6 +8,7 @@ import "../styles/AllDecksView.css";
 import Footer from "../components/Footer";
 import useDeckActions from "../hooks/useDeckActions";
 import { getUserID } from "../get-user-info/getUserFromToken";
+import { getUsername } from "../get-user-info/getUserFromToken";
 import QuizFeature from '../quiz-feature/QuizFeature';
 
 
@@ -19,6 +20,7 @@ function AllDecksView() {
     const [decks, setDecks] = useState([]);
 
     const userID = getUserID();
+    const user = getUsername();
     if (!userID) {
         alert("Please Login.")
         navigate("/signin")
@@ -201,7 +203,7 @@ function AllDecksView() {
                             "No favorite decks yet. Star some decks to see them here!"
                         ) : (
                             <>
-                                <h1>👋 Welcome to <strong>BrainFlip</strong>!</h1> <br />
+                                <h1>👋 Welcome to BrainFlip {user} !</h1>  <br />
                                 Let's start learning — click "+ New Deck" to create your first flashcard set!
                             </>
                         )}

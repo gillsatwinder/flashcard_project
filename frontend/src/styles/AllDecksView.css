@@ -36,7 +36,7 @@
 .page-title {
   font-size: 28px;
   font-weight: 600;
-  color: #333;
+  color: #f5f3ec;
   margin: 0;
 }
 
@@ -88,7 +88,7 @@
 /* Grid layout */
 .deck-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(600px, 1fr));
   gap: 20px;
 }
 
@@ -196,7 +196,7 @@
 
 /* empty list */
 .empty-text {
-  max-width: 400px;
+  max-height: 400px;
   margin: 40px auto;
   padding: 2rem;
   text-align: center;
