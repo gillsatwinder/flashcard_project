@@ -197,9 +197,14 @@ function AllDecksView() {
             <div className="deck-grid">
                 {filteredDecks.length === 0 ? (
                     <p className="empty-text">
-                        {isFavoritesPage
-                            ? "No favorite decks yet. Star some decks to see them here!"
-                            : "No decks yet. Start by creating one!"}
+                        {isFavoritesPage ? (
+                            "No favorite decks yet. Star some decks to see them here!"
+                        ) : (
+                            <>
+                                <h1>👋 Welcome to <strong>BrainFlip</strong>!</h1> <br />
+                                Let's start learning — click "+ New Deck" to create your first flashcard set!
+                            </>
+                        )}
                     </p>
                 ) : (
                     filteredDecks.map((deck) => (
@@ -255,7 +260,7 @@ function AllDecksView() {
                         >
                             ✕
                         </button>
-                        <QuizFeature deck={ selectedDeck }/>
+                        <QuizFeature deck={selectedDeck} />
                     </div>
                 </div>
             )}

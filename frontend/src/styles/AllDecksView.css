@@ -1,7 +1,7 @@
 /* All Decks View Styles */
 .all-decks-container {
   padding: 24px;
-  background-color: #f8f9fa;
+  background-color: transparent;
   min-height: 100vh;
 }
 
@@ -196,14 +196,23 @@
 
 /* empty list */
 .empty-text {
+  max-width: 400px;
+  margin: 40px auto;
+  padding: 2rem;
   text-align: center;
-  color: #777;
-  font-style: italic;
-  margin-top: 40px;
+  font-size: 1.2rem;
+  color: white;
+  line-height: 1.6;
+  word-wrap: break-word;
+  background: rgba(224, 216, 216, 0.15);
+  backdrop-filter: blur(10px);
+  border-radius: 20px;
+  border: 2px solid rgba(255, 255, 255, 0.705);
 }
 
 
-@media (max-width: 600px) {
+
+@media (max-width: 800px) {
   .header-inline {
     flex-wrap: wrap;
     gap: 10px;
