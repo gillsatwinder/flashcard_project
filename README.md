@@ -1,2 +1,2 @@
 # BrainFlip
-Smart view flashcards app for studying.
+AI powered smart view flashcards app for studying.
